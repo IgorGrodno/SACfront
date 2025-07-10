@@ -1,0 +1,27 @@
+<div class="login-container">
+  <h2>Вход</h2>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="loginForm">
+    <div>
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+        placeholder="Enter username"
+      />
+    </div>
+    <div>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        placeholder="Enter password"
+      />
+    </div>
+    <div class="loginControls">
+      <p class="clicable" (click)="onSubmit()">Войти</p>
+      <p class="clicable" (click)="navigateTo('/registration')">
+        Зарегистрироваться
+      </p>
+    </div>
+  </form>
+</div>

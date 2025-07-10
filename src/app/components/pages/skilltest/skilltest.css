@@ -1,0 +1,41 @@
+.step {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.number-input {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.number-input input {
+  width: 2ch; /* ширина под две цифры */
+  text-align: center;
+  font-size: 1rem;
+  padding: 0.2rem;
+  margin: 0 0.3rem;
+}
+
+.number-input button {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1rem;
+  padding: 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.submitButton {
+  margin-top: 50px;
+}
+
+.head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}

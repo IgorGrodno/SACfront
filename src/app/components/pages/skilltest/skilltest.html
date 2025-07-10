@@ -1,0 +1,33 @@
+<div class="head">
+  <h1 *ngIf="skill; else loading">{{ skill.name }}</h1>
+  <div class="studentNumber">
+    <p>выберите номер студента</p>
+    <select [(ngModel)]="studentNumber">
+      <option *ngFor="let num of numbers" [value]="num">{{ num }}</option>
+    </select>
+  </div>
+</div>
+
+<div *ngFor="let step of testSteps; let i = index">
+  <div class="step">
+    <div class="number-input">
+      <button (click)="decrement(i)">−</button>
+      <input type="number" [(ngModel)]="step.value" />
+      <button (click)="increment(i)">+</button>
+    </div>
+    <div class="stepDescription">
+      {{ step.description }}
+    </div>
+  </div>
+</div>
+<div class="submitButton">
+  <button (click)="submit()">Завершить оценку</button>
+</div>
+
+<ng-template #noSteps>
+  <p>Нет доступных тестовых шагов.</p>
+</ng-template>
+
+<ng-template #loading>
+  <p>Загрузка навыка...</p>
+</ng-template>
