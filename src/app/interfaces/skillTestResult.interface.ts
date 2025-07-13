@@ -3,5 +3,7 @@ export interface SkillTestResult {
   studentId: number;
   teacherId?: number;
   stepIdScore: { id: number; value: number }[];
+  lithMistakes: number;
+  hardMistakes: number;
   resultDate: Date;
 }

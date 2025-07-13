@@ -6,6 +6,7 @@ import { TestStep } from '../../../interfaces/testStep.interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkillTestResult } from '../../../interfaces/skillTestResult.interface';
+import { StudentService } from '../../../services/student.service';
 
 @Component({
   selector: 'app-skilltest',
@@ -18,12 +19,16 @@ export class SkillTest {
   skillId!: number;
   testSteps: { id: number; description: string; value: number }[] = [];
   skill: Skill | undefined;
-  numbers: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+  studentNumbers: number[] = [];
+  serchedNumbers: number[] = [];
   studentNumber: number = 0;
+  lightMistakes: number = 0;
+  hardMistakes: number = 0;
 
   constructor(
     private route: ActivatedRoute,
-    private skillService: SkillService
+    private skillService: SkillService,
+    private studentService: StudentService
   ) {}
 
   ngOnInit(): void {
@@ -50,12 +55,31 @@ export class SkillTest {
             console.error('Ошибка при загрузке тестовых шагов:', err);
           },
         });
+        this.studentService.getStudentNumbers().subscribe({
+          next: (numbers: number[]) => {
+            this.studentNumbers = numbers;
+            this.serchedNumbers = this.studentNumbers;
+          },
+          error: (err) => {
+            console.error('Ошибка при загрузке номеров студентов:', err);
+          },
+        });
       }
     });
   }
 
+  onSearch(value: string) {
+    const search = value.trim();
+    if (!value) {
+      this.serchedNumbers = this.studentNumbers;
+    } else
+      this.serchedNumbers = this.studentNumbers.filter((num) =>
+        num.toString().includes(search)
+      );
+  }
+
   increment(index: number) {
-    if (this.testSteps[index].value < 5) {
+    if (this.testSteps[index].value < 3) {
       this.testSteps[index].value++;
     }
   }
@@ -66,8 +90,39 @@ export class SkillTest {
     }
   }
 
+  incrementMistakes(index: number) {
+    if (index === -1) {
+      this.lightMistakes++;
+    } else {
+      this.hardMistakes++;
+    }
+  }
+
+  decrementMistakes(index: number) {
+    if (index === -1) {
+      if (this.lightMistakes > 0) {
+        this.lightMistakes--;
+      }
+    } else {
+      if (this.hardMistakes > 0) {
+        this.hardMistakes--;
+      }
+    }
+  }
+
+  selectStudent(number: number) {
+    this.studentNumber = number;
+    const searchInput = document.getElementById(
+      'searchInput'
+    ) as HTMLInputElement;
+    if (searchInput) {
+      searchInput.value = '';
+      this.serchedNumbers = this.studentNumbers;
+    }
+  }
+
   submit() {
-    if (this.studentNumber > 1) {
+    if (this.studentNumber > 0) {
       const result: SkillTestResult = {
         skillId: this.skillId,
         studentId: this.studentNumber,
@@ -76,13 +131,23 @@ export class SkillTest {
           id: step.id,
           value: step.value,
         })),
+        lithMistakes: this.lightMistakes,
+        hardMistakes: this.hardMistakes,
         resultDate: new Date(),
       };
       this.skillService.sendTestResult(result).subscribe((response) => {
         alert('результат записан');
         console.log(response);
-        this.testSteps.forEach((step) => (step.value = 0));
         this.studentNumber = 0;
+        this.studentService.getStudentNumbers().subscribe({
+          next: (numbers: number[]) => {
+            this.studentNumbers = numbers;
+            this.serchedNumbers = this.studentNumbers;
+          },
+          error: (err) => {
+            console.error('Ошибка при загрузке номеров студентов:', err);
+          },
+        });
       });
     } else {
       alert('выберите номер студента');
