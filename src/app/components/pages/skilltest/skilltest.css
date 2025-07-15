@@ -80,11 +80,11 @@
   padding: 4px;
   font-family: monospace;
   font-size: large;
-  gap: 5px;
 }
 
 .item {
   text-align: right;
+  margin: 5px;
 }
 
 input {

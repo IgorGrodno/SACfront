@@ -79,7 +79,7 @@ export class SkillTest {
   }
 
   increment(index: number) {
-    if (this.testSteps[index].value < 3) {
+    if (this.testSteps[index].value < 2) {
       this.testSteps[index].value++;
     }
   }
