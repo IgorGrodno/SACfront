@@ -12,7 +12,7 @@
           <button (click)="increment(i)">+</button>
         </div>
         <div class="stepDescription">
-          {{ step.description }}
+          {{ step.name }}
         </div>
       </div>
     </div>
@@ -55,12 +55,17 @@
 </div>
 
 <div class="studentnumber">
-  <p *ngIf="studentNumber > 0">Выбран студент № {{ studentNumber }}</p>
+  <p *ngIf="studentNumber > 0; else noStudent">
+    Выбран студент № {{ studentNumber }}
+  </p>
+  <ng-template #noStudent>
+    <p>Студент не выбран</p>
+  </ng-template>
   <div>
     <input
       id="searchInput"
       #searchInput
-      type="text"
+      type="number"
       placeholder="Поиск"
       (input)="onSearch(searchInput.value)"
     />

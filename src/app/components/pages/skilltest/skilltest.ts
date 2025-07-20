@@ -2,7 +2,6 @@ import { Component, Input, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SkillService } from '../../../services/skill.service';
 import { Skill } from '../../../interfaces/skill.interface';
-import { TestStep } from '../../../interfaces/testStep.interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkillTestResult } from '../../../interfaces/skillTestResult.interface';
@@ -17,7 +16,7 @@ import { StudentService } from '../../../services/student.service';
 })
 export class SkillTest {
   skillId!: number;
-  testSteps: { id: number; description: string; value: number }[] = [];
+  testSteps: { name: string; value: number }[] = [];
   skill: Skill | undefined;
   studentNumbers: number[] = [];
   serchedNumbers: number[] = [];
@@ -39,20 +38,12 @@ export class SkillTest {
         this.skillService.getSkill(this.skillId).subscribe({
           next: (skill: Skill) => {
             this.skill = skill;
-          },
-        });
-        this.skillService.getSkillTestSteps(this.skillId).subscribe({
-          next: (steps: TestStep[]) => {
-            steps.forEach((step, index) => {
+            this.skill.steps.forEach((step) => {
               this.testSteps.push({
-                id: step.id,
-                description: step.description,
+                name: step,
                 value: 0,
               });
             });
-          },
-          error: (err) => {
-            console.error('Ошибка при загрузке тестовых шагов:', err);
           },
         });
         this.studentService.getStudentNumbers().subscribe({
@@ -127,11 +118,11 @@ export class SkillTest {
         skillId: this.skillId,
         studentId: this.studentNumber,
         teacherId: undefined,
-        stepIdScore: this.testSteps.map((step) => ({
-          id: step.id,
+        stepScore: this.testSteps.map((step) => ({
+          name: step.name,
           value: step.value,
         })),
-        lithMistakes: this.lightMistakes,
+        lightMistakes: this.lightMistakes,
         hardMistakes: this.hardMistakes,
         resultDate: new Date(),
       };

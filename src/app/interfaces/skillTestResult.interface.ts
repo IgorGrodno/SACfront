@@ -2,8 +2,8 @@ export interface SkillTestResult {
   skillId: number;
   studentId: number;
   teacherId?: number;
-  stepIdScore: { id: number; value: number }[];
-  lithMistakes: number;
+  stepScore: { name: string; value: number }[];
+  lightMistakes: number;
   hardMistakes: number;
   resultDate: Date;
 }
