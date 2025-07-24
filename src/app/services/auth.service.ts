@@ -69,11 +69,10 @@ export class AuthService {
 
   register(payload: {
     username: string;
-    email: string;
     password: string;
   }): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(
-      this.authUrl + '/newuserregister',
+      this.authUrl + '/register',
       payload,
       httpOptions
     );

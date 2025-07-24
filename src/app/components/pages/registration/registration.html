@@ -1,36 +1,58 @@
-<div class="login-container">
-  <h2>Регистрация</h2>
-  <form
-    [formGroup]="registrationForm"
-    (ngSubmit)="onSubmit()"
-    class="loginForm"
-  >
-    <div>
+<div class="registration-container">
+  <h2 class="registration-title">Регистрация</h2>
+
+  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="username">Имя пользователя</label>
       <input
         id="username"
         type="text"
         formControlName="username"
-        placeholder="Enter username"
+        placeholder="Введите имя пользователя"
+        autocomplete="username"
+        [attr.aria-invalid]="
+          submitted && registrationForm.get('username')?.invalid
+        "
+        [attr.aria-required]="true"
+        [class.invalid]="submitted && registrationForm.get('username')?.invalid"
       />
+      <div
+        class="error"
+        *ngIf="submitted && registrationForm.get('username')?.invalid"
+      >
+        Имя пользователя обязательно
+      </div>
     </div>
-    <div>
-      <input
-        id="email"
-        type="email"
-        formControlName="email"
-        placeholder="Enter email"
-      />
-    </div>
-    <div>
+
+    <div class="form-group">
+      <label for="password">Пароль</label>
       <input
         id="password"
         type="password"
         formControlName="password"
-        placeholder="Enter password"
+        placeholder="Введите пароль"
+        autocomplete="new-password"
+        [attr.aria-invalid]="
+          submitted && registrationForm.get('password')?.invalid
+        "
+        [attr.aria-required]="true"
+        [class.invalid]="submitted && registrationForm.get('password')?.invalid"
       />
+      <div
+        class="error"
+        *ngIf="submitted && registrationForm.get('password')?.invalid"
+      >
+        Пароль обязателен
+      </div>
     </div>
-    <div class="loginControls">
-      <p class="clicable" type="submit">Зарегистрироваться</p>
+
+    <button type="submit" class="submit-button">Зарегистрироваться</button>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+
+    <div class="login-link">
+      Уже есть аккаунт?
+      <a (click)="navigateTo('/login')">Войти</a>
     </div>
   </form>
 </div>

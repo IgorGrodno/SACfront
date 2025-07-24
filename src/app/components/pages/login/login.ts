@@ -34,7 +34,7 @@ export class Login {
     if (this.loginForm.invalid) return;
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
-        this.navigateTo('/');
+        console.log('Login successful', response);
       },
       error: (err) => {
         console.error('Login failed', err);

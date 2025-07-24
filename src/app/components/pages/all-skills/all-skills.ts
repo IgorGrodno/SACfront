@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { SkillService } from '../../../services/skill.service';
 import { Skill } from '../../../interfaces/skill.interface';
 import { CommonModule } from '@angular/common';

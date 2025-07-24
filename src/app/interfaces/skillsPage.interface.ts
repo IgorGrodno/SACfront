@@ -6,4 +6,5 @@ export interface SkillsPage {
   pageSize: number;
   pageIndex: number;
   totalPages: number;
+  teatherId?: number;
 }

@@ -1,27 +1,32 @@
 import { Component } from '@angular/core';
 import {
-  FormGroup,
   FormBuilder,
-  Validators,
+  FormGroup,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-registration',
-  imports: [ReactiveFormsModule],
   templateUrl: './registration.html',
-  styleUrl: './registration.css',
+  styleUrls: ['./registration.css'],
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class Registration {
   registrationForm: FormGroup;
   submitted = false;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.registrationForm = this.fb.group({
       username: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
     });
   }
@@ -29,17 +34,13 @@ export class Registration {
   onSubmit() {
     this.submitted = true;
     this.error = null;
-
     if (this.registrationForm.invalid) return;
 
-    const { email, password } = this.registrationForm.value;
-
-    // 🔐 Эмуляция логина
-    if (email === 'admin@example.com' && password === 'password') {
-      alert('Успешный вход!');
-    } else {
-      this.error = 'Неверный логин или пароль';
-    }
+    const { username, password } = this.registrationForm.value;
+    this.authService.register({ username, password }).subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: (err) => (this.error = err),
+    });
   }
 
   navigateTo(path: string) {

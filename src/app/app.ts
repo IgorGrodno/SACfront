@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';
 import { User } from './interfaces/user.interface';
 import { AuthService } from './services/auth.service';
@@ -30,11 +30,24 @@ export class App {
       this.currentUser = user || undefined;
       this.menuItems.clear();
       if (this.currentUser) {
-        this.menuItems.set('Notes', '/');
         if (
           this.currentUser.roles?.includes('ROLE_ADMIN' as unknown as UserRole)
         ) {
-          this.menuItems.set('Admin Dashboard', '/admin');
+          this.menuItems.set('Admin page', '/adminpage');
+        }
+        if (
+          this.currentUser.roles?.includes(
+            'ROLE_TEACHER' as unknown as UserRole
+          )
+        ) {
+          this.menuItems.set('Skills', '/skills');
+        }
+        if (
+          this.currentUser.roles?.includes(
+            'ROLE_STUDENT' as unknown as UserRole
+          )
+        ) {
+          this.menuItems.set('Student Dashboard', '/student');
         }
       }
     });

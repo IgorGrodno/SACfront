@@ -15,7 +15,6 @@ import { StudentService } from '../../../services/student.service';
   styleUrl: './skilltest.css',
 })
 export class SkillTest {
-  skillId!: number;
   testSteps: { name: string; value: number }[] = [];
   skill: Skill | undefined;
   studentNumbers: number[] = [];
@@ -34,8 +33,7 @@ export class SkillTest {
     this.route.paramMap.subscribe((params) => {
       const idStr = params.get('id');
       if (idStr) {
-        this.skillId = +idStr;
-        this.skillService.getSkill(this.skillId).subscribe({
+        this.skillService.getSkill(Number(idStr)).subscribe({
           next: (skill: Skill) => {
             this.skill = skill;
             this.skill.steps.forEach((step) => {
@@ -113,9 +111,9 @@ export class SkillTest {
   }
 
   submit() {
-    if (this.studentNumber > 0) {
+    if (this.studentNumber > 0 && this.skill) {
       const result: SkillTestResult = {
-        skillId: this.skillId,
+        skillId: this.skill?.id,
         studentId: this.studentNumber,
         teacherId: undefined,
         stepScore: this.testSteps.map((step) => ({
