@@ -1,0 +1,47 @@
+<div class="container">
+  <div class="left-panel">
+    <label for="skillName">Название навыка:</label>
+    <input
+      id="skillName"
+      [(ngModel)]="skillName"
+      placeholder="Введите название"
+    />
+    <button (click)="saveSkill()" class="save-button">
+      💾 Сохранить навык
+    </button>
+
+    <h3>Выбранные шаги</h3>
+    <div
+      cdkDropList
+      [cdkDropListData]="skill.steps"
+      [cdkDropListConnectedTo]="['allStepsList']"
+      class="drop-list"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <div class="drop-item" *ngFor="let step of skill.steps" cdkDrag>
+        {{ step.description }}
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <h3>Доступные шаги</h3>
+    <div class="add-step-form">
+      <input [(ngModel)]="newStepName" placeholder="Новый шаг" />
+      <button (click)="addNewStep()">➕ Добавить шаг</button>
+    </div>
+
+    <div
+      cdkDropList
+      id="allStepsList"
+      [cdkDropListData]="allSteps"
+      [cdkDropListConnectedTo]="['cdk-drop-list-0']"
+      class="drop-list"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <div class="drop-item" *ngFor="let step of allSteps" cdkDrag>
+        {{ step.description }}
+      </div>
+    </div>
+  </div>
+</div>

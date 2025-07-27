@@ -1,14 +1,20 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
 import { RegisterResponse } from '../interfaces/registerResponse.interface';
 import { User } from '../interfaces/user.interface';
 
+interface LoginResponse {
+  id: number;
+  username: string;
+  roles: string[];
+  token: string;
+}
+
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-  withCredentials: true,
 };
 
 @Injectable({
@@ -48,11 +54,21 @@ export class AuthService {
 
   login(payload: { username: string; password: string }): Observable<User> {
     return this.http
-      .post<User>(this.authUrl + '/signin', payload, httpOptions)
+      .post<LoginResponse>(this.authUrl + '/signin', payload, httpOptions)
       .pipe(
-        tap((user: User) => {
-          this.setCurrentUser(user);
-        })
+        tap((res: LoginResponse) => {
+          this.storageService.saveToken(res.token);
+          this.setCurrentUser({
+            id: res.id,
+            username: res.username,
+            roles: res.roles,
+          });
+        }),
+        map((res) => ({
+          id: res.id,
+          username: res.username,
+          roles: res.roles,
+        }))
       );
   }
 

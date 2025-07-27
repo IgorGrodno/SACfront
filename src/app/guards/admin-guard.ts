@@ -7,7 +7,6 @@ import {
   UrlTree,
 } from '@angular/router';
 import { StorageService } from '../services/storage.service';
-import { UserRole } from '../interfaces/userRole.interface';
 
 @Injectable({ providedIn: 'root' })
 export class AdminGuard implements CanActivate {
@@ -18,9 +17,9 @@ export class AdminGuard implements CanActivate {
     state: RouterStateSnapshot
   ): boolean | UrlTree {
     const isLoggedIn = this.storageService.isLoggedIn();
-    const roles: UserRole[] = this.storageService.getUserRoles();
+    const roles: string[] = this.storageService.getUserRoles();
 
-    if (isLoggedIn && roles?.includes('ROLE_ADMIN' as unknown as UserRole)) {
+    if (isLoggedIn && roles?.includes('ROLE_ADMIN' as unknown as string)) {
       return true;
     } else {
       return this.router.parseUrl('/login');

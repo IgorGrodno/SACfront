@@ -23,6 +23,10 @@ export class Header {
     this.authService.logout().subscribe();
   }
 
+  navigateToProfile() {
+    this.router.navigate(['/profile']);
+  }
+
   navigateTo(path: string) {
     this.router.navigate([path]);
   }

@@ -14,7 +14,9 @@
   <div *ngIf="currentUser; then userNameTpl; else loginTpl"></div>
 
   <ng-template #userNameTpl>
-    <p class="user-name">{{ currentUser }}</p>
+    <p class="user-name clicable" (click)="navigateToProfile()">
+      Перейти в профиль: {{ currentUser }}
+    </p>
     <p class="clicable" (click)="logout()">Выйти</p>
   </ng-template>
 

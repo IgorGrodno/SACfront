@@ -1,30 +1,18 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { User } from '../../../interfaces/user.interface';
-import { UserService } from '../../../services/admin.service';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { Adminpageskills } from './admin-pages/adminpageskills/adminpageskills';
+import { AdminPageUsers } from './admin-pages/adminpageusers/adminpageusers';
 
 @Component({
   selector: 'app-admin-page',
-  imports: [CommonModule],
+  imports: [CommonModule, AdminPageUsers, Adminpageskills],
   templateUrl: './admin-page.html',
   styleUrl: './admin-page.css',
 })
 export class AdminPage {
-  users: User[] | undefined;
+  selected: 'users' | 'skills' = 'users';
 
-  constructor(private router: Router, private userService: UserService) {}
-
-  ngOnInit() {
-    this.userService.getAllUsers().subscribe((users: User[]) => {
-      this.users = users;
-      console.log('Users fetched:', this.users);
-    });
-  }
-
-  deleteUser(userId: number) {
-    this.userService.deleteUser(userId).subscribe(() => {
-      this.users = this.users?.filter((user) => user.id !== userId);
-    });
+  select(view: 'users' | 'skills') {
+    this.selected = view;
   }
 }

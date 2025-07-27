@@ -1,0 +1,9 @@
+<nav>
+  <button (click)="select('skilllist')">Список навыков</button>
+  <button (click)="select('addskill')">Добавить навык</button>
+</nav>
+
+<hr />
+
+<app-skilllist *ngIf="selected === 'skilllist'"></app-skilllist>
+<app-addskill *ngIf="selected === 'addskill'"></app-addskill>

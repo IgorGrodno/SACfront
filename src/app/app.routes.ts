@@ -6,6 +6,7 @@ import { AllSkills } from './components/pages/all-skills/all-skills';
 import { AdminPage } from './components/pages/admin-page/admin-page';
 import { AdminGuard } from './guards/admin-guard';
 import { AuthGuard } from './guards/auth-guard';
+import { Profile } from './components/pages/profile/profile';
 
 export const routes: Routes = [
   {
@@ -30,6 +31,11 @@ export const routes: Routes = [
   {
     path: 'registration',
     component: Registration,
+  },
+  {
+    path: 'profile',
+    component: Profile,
+    canActivate: [AuthGuard],
   },
   {
     path: '**',

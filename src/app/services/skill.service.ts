@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Skill } from '../interfaces/skill.interface';
 import { SkillTestResult } from '../interfaces/skillTestResult.interface';
+import { SkillStep } from '../interfaces/skillStep.interface';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -13,21 +14,9 @@ const httpOptions = {
   providedIn: 'root',
 })
 export class SkillService {
-  private skillUrl = 'fakeDB/SkillDB.json';
+  private skillUrl = 'http://localhost:8080/api/skills';
 
   constructor(private http: HttpClient) {}
-
-  getSkill(skillId: number): Observable<Skill> {
-    return this.http.get<{ skills: Skill[] }>(this.skillUrl).pipe(
-      map((data) => {
-        const skill = data.skills.find((s) => s.id === skillId);
-        if (!skill) {
-          throw new Error('Skill not found');
-        }
-        return skill;
-      })
-    );
-  }
 
   getAllSkills(): Observable<Skill[]> {
     return this.http
@@ -36,9 +25,35 @@ export class SkillService {
   }
 
   sendTestResult(result: SkillTestResult): Observable<SkillTestResult> {
-    return new Observable<SkillTestResult>((observer) => {
-      observer.next(result);
-      observer.complete();
-    });
+    return this.http.post<SkillTestResult>(
+      `${this.skillUrl}/test-result`,
+      result,
+      httpOptions
+    );
+  }
+
+  getSkill(id: number): Observable<Skill> {
+    return this.http.get<Skill>(`${this.skillUrl}/${id}`);
+  }
+
+  getSkillSteps(): Observable<SkillStep[]> {
+    return this.http.get<SkillStep[]>(`${this.skillUrl}/steps`, httpOptions);
+  }
+
+  createSkill(skill: Skill): Observable<any> {
+    return this.http.post('/api/skills', skill);
+  }
+
+  updateSkill(id: number, skill: Skill): Observable<any> {
+    return this.http.put(`/api/skills/${id}`, skill);
+  }
+
+  addStep(step: SkillStep): Observable<SkillStep> {
+    console.log('Adding step:', step);
+    return this.http.post<SkillStep>(
+      `${this.skillUrl}/steps`,
+      step,
+      httpOptions
+    );
   }
 }

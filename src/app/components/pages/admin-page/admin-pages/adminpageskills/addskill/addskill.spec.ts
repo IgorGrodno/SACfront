@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AdminPage } from './admin-page';
+import { Addskill } from './addskill';
 
-describe('AdminPage', () => {
-  let component: AdminPage;
-  let fixture: ComponentFixture<AdminPage>;
+describe('Addskill', () => {
+  let component: Addskill;
+  let fixture: ComponentFixture<Addskill>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminPage]
-    })
-    .compileComponents();
+      imports: [Addskill],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(AdminPage);
+    fixture = TestBed.createComponent(Addskill);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

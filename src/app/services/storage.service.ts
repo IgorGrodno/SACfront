@@ -1,54 +1,52 @@
 import { Injectable } from '@angular/core';
 import { User } from '../interfaces/user.interface';
-import { UserRole } from '../interfaces/userRole.interface';
-
-const USER_KEY = 'auth-user';
-const AUTH_TOKEN = 'auth_token';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
-  constructor() {}
+  private readonly USER_KEY = 'auth-user';
+  private readonly AUTH_TOKEN = 'auth_token';
 
   clean(): void {
-    window.sessionStorage.clear();
+    this.removeUser();
+    this.removeToken();
   }
 
-  public saveUser(user: User): void {
-    window.sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+  saveUser(user: User): void {
+    window.sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
-  public getUser(): User {
-    const user = window.sessionStorage.getItem(USER_KEY);
+  getUser(): User | null {
+    const user = window.sessionStorage.getItem(this.USER_KEY);
     if (user) {
       return JSON.parse(user) as User;
     }
-    return {} as User;
+    return null;
   }
 
-  public removeUser(): void {
-    window.sessionStorage.removeItem(USER_KEY);
+  removeUser(): void {
+    window.sessionStorage.removeItem(this.USER_KEY);
   }
 
-  public saveToken(token: string): void {
-    window.sessionStorage.setItem(AUTH_TOKEN, token);
+  saveToken(token: string): void {
+    window.sessionStorage.setItem(this.AUTH_TOKEN, token);
   }
 
-  public getToken(): string | null {
-    return window.sessionStorage.getItem(AUTH_TOKEN);
+  getToken(): string | null {
+    return window.sessionStorage.getItem(this.AUTH_TOKEN);
   }
 
-  public removeToken(): void {
-    window.sessionStorage.removeItem(AUTH_TOKEN);
+  removeToken(): void {
+    window.sessionStorage.removeItem(this.AUTH_TOKEN);
   }
 
-  public getUserRoles(): UserRole[] {
+  getUserRoles(): string[] {
     const user = this.getUser();
     return user?.roles ?? [];
   }
 
-  public isLoggedIn(): boolean {
-    return !!window.sessionStorage.getItem(USER_KEY);
+  isLoggedIn(): boolean {
+    return !!this.getToken();
   }
 }

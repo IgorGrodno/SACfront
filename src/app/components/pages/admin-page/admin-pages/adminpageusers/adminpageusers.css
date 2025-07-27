@@ -36,3 +36,12 @@
 .update-button:hover {
   background-color: #2980b9;
 }
+
+.search-input {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}

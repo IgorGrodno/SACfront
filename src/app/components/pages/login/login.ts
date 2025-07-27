@@ -34,10 +34,11 @@ export class Login {
     if (this.loginForm.invalid) return;
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
-        console.log('Login successful', response);
+        alert('OK');
+        this.router.navigate(['/']);
       },
       error: (err) => {
-        console.error('Login failed', err);
+        alert('Ошибка входа: ' + err.error.message);
       },
     });
   }

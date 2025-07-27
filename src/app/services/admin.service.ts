@@ -26,4 +26,8 @@ export class UserService {
       httpOptions
     );
   }
+
+  updateUser(user: User): Observable<User> {
+    return this.http.put<User>(this.authUrl + '/user', user, httpOptions);
+  }
 }

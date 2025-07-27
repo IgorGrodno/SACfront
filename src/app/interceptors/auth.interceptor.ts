@@ -1,27 +1,25 @@
 import {
-  HttpEvent,
-  HttpHandlerFn,
   HttpInterceptorFn,
   HttpRequest,
+  HttpHandlerFn,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { StorageService } from '../services/storage.service';
 import { inject } from '@angular/core';
+import { StorageService } from '../services/storage.service';
 
-export const authenticationInterceptor: HttpInterceptorFn = (
+export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
-): Observable<HttpEvent<any>> => {
+) => {
   const storageService = inject(StorageService);
-  const user = storageService.getUser();
-  const userId = String(user.id);
-  const headers: Record<string, string> = {};
-  if (userId) {
-    headers['X-User-Id'] = userId;
+  const token = storageService.getToken();
+
+  if (token) {
+    const cloned = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return next(cloned);
   }
-  req = req.clone({
-    withCredentials: true,
-    setHeaders: headers,
-  });
   return next(req);
 };

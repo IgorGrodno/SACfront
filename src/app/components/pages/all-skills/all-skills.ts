@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './all-skills.css',
 })
 export class AllSkills {
-  skills: Skill[] | undefined;
+  skills: Skill[] = [];
 
   constructor(private router: Router, private skillService: SkillService) {}
 

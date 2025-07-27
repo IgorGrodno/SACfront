@@ -38,7 +38,7 @@ export class SkillTest {
             this.skill = skill;
             this.skill.steps.forEach((step) => {
               this.testSteps.push({
-                name: step,
+                name: step.description,
                 value: 0,
               });
             });

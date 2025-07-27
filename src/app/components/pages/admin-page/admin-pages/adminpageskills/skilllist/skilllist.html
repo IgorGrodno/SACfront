@@ -1,0 +1,35 @@
+<div class="skills-container">
+  <h1 class="skills-title">Навыки</h1>
+
+  <table class="skills-table" *ngIf="skills.length > 0; else noSkills">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Название</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let skill of skills"
+        class="clicable"
+        (click)="navigateToSkillDetails(skill.id)"
+      >
+        <td>{{ skill.id }}</td>
+        <td>{{ skill.name }}</td>
+        <td>
+          <button class="delete-button" (click)="deleteSkill(skill.id)">
+            🗑 Удалить
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noSkills>
+    <p>Навыки отсутствуют.</p>
+  </ng-template>
+</div>
+
+<app-addskill *ngIf="selected === 'addskill'" [skillId]="selectedSkillId">
+</app-addskill>
