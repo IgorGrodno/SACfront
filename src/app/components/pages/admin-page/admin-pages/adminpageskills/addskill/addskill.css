@@ -29,6 +29,10 @@ input {
   border: 1px solid #90caf9;
   border-radius: 4px;
   cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
 }
 
 .save-button {

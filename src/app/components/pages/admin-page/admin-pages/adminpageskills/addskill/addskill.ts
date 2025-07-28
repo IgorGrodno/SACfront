@@ -32,29 +32,34 @@ export class Addskill implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadSkillSteps();
+    this.loadSkill();
+  }
+
+  private loadSkillSteps(): void {
     this.skillService.getSkillSteps().subscribe({
       next: (steps) => {
         this.allSteps = steps;
-        console.log('All steps fetched:', steps);
-      },
-      error: (err) => {
-        console.error('Ошибка при загрузке шагов навыка:', err);
-      },
-    });
-
-    if (this.skillId !== null) {
-      this.skillService.getSkill(this.skillId).subscribe({
-        next: (skill) => {
-          this.skill = skill;
-          this.skillName = skill.name;
-          const usedIds = skill.steps.map((s) => s.id);
+        if (this.skillId !== null) {
+          const usedIds = this.skill.steps.map((s) => s.id);
           this.allSteps = this.allSteps.filter((s) => !usedIds.includes(s.id));
-        },
-        error: (err) => {
-          console.error('Ошибка при загрузке навыка:', err);
-        },
-      });
-    }
+        }
+      },
+      error: (err) => console.error('Ошибка при загрузке шагов навыка:', err),
+    });
+  }
+
+  private loadSkill(): void {
+    if (this.skillId === null) return;
+
+    this.skillService.getSkill(this.skillId).subscribe({
+      next: (skill) => {
+        this.skill = skill;
+        this.skillName = skill.name;
+        this.loadSkillSteps();
+      },
+      error: (err) => console.error('Ошибка при загрузке навыка:', err),
+    });
   }
 
   drop(event: CdkDragDrop<SkillStep[]>) {
@@ -76,7 +81,7 @@ export class Addskill implements OnInit {
 
   saveSkill(): void {
     const payload: Skill = {
-      id: this.skillId ?? 0,
+      id: this.skillId ?? -1,
       name: this.skillName,
       steps: this.skill.steps,
     };
@@ -108,22 +113,29 @@ export class Addskill implements OnInit {
     const trimmed = this.newStepName.trim();
     if (!trimmed) return;
 
-    const newStep: SkillStep = {
-      id: -1,
-      description: trimmed,
-    };
-
-    console.log('Adding new step:', newStep);
+    const newStep: SkillStep = { id: -1, description: trimmed };
 
     this.skillService.addStep(newStep).subscribe({
       next: (step) => {
-        this.allSteps.push(step);
-        this.skill.steps.push(step);
+        this.loadSkillSteps();
+        this.newStepName = '';
       },
-      error: (err) => {
-        console.error('Ошибка при добавлении шага:', err);
-      },
+      error: (err) => console.error('Ошибка при добавлении шага:', err),
     });
-    this.newStepName = '';
+  }
+
+  removeStep(stepId: number) {
+    const stepToRemove = this.skill.steps.find((s) => s.id === stepId);
+    if (!stepToRemove) return;
+
+    this.skill.steps = this.skill.steps.filter((s) => s.id !== stepId);
+    this.allSteps.push(stepToRemove);
+
+    this.skillService.removeStep(stepId).subscribe({
+      next: () => {
+        console.log('Шаг удалён');
+      },
+      error: (err) => console.error('Ошибка при удалении шага:', err),
+    });
   }
 }

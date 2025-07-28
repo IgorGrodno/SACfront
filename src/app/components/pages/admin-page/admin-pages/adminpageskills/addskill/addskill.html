@@ -40,7 +40,10 @@
       (cdkDropListDropped)="drop($event)"
     >
       <div class="drop-item" *ngFor="let step of allSteps" cdkDrag>
-        {{ step.description }}
+        <p>{{ step.description }}</p>
+        <span class="remove-step" (click)="removeStep(step.id)" class="clicable"
+          >&#10006;</span
+        >
       </div>
     </div>
   </div>

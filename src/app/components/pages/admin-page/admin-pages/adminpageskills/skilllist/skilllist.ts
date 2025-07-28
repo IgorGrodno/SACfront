@@ -12,8 +12,12 @@ import { Addskill } from '../addskill/addskill';
 })
 export class Skilllist {
   skills: Skill[] = [];
-  selected: string = '';
   selectedSkillId: number | null = null;
+  selected: 'skilllist' | 'addskill' = 'skilllist';
+
+  select(view: 'skilllist' | 'addskill') {
+    this.selected = view;
+  }
 
   constructor(private skillService: SkillService) {
     skillService.getAllSkills().subscribe({
@@ -31,7 +35,7 @@ export class Skilllist {
   deleteSkill(arg0: number) {}
 
   navigateToSkillDetails(skillId: number): void {
-    this.selected = 'addskill';
     this.selectedSkillId = skillId;
+    this.selected = 'addskill';
   }
 }

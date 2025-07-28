@@ -19,9 +19,7 @@ export class SkillService {
   constructor(private http: HttpClient) {}
 
   getAllSkills(): Observable<Skill[]> {
-    return this.http
-      .get<{ skills: Skill[] }>(this.skillUrl)
-      .pipe(map((data) => data.skills));
+    return this.http.get<Skill[]>(`${this.skillUrl}/skills`, httpOptions);
   }
 
   sendTestResult(result: SkillTestResult): Observable<SkillTestResult> {
@@ -33,7 +31,7 @@ export class SkillService {
   }
 
   getSkill(id: number): Observable<Skill> {
-    return this.http.get<Skill>(`${this.skillUrl}/${id}`);
+    return this.http.get<Skill>(`${this.skillUrl}/skill/${id}`);
   }
 
   getSkillSteps(): Observable<SkillStep[]> {
@@ -41,11 +39,11 @@ export class SkillService {
   }
 
   createSkill(skill: Skill): Observable<any> {
-    return this.http.post('/api/skills', skill);
+    return this.http.post(`${this.skillUrl}/skill`, skill);
   }
 
   updateSkill(id: number, skill: Skill): Observable<any> {
-    return this.http.put(`/api/skills/${id}`, skill);
+    return this.http.put(`${this.skillUrl}/skill/${id}`, skill);
   }
 
   addStep(step: SkillStep): Observable<SkillStep> {
@@ -55,5 +53,9 @@ export class SkillService {
       step,
       httpOptions
     );
+  }
+
+  removeStep(stepId: number): Observable<any> {
+    return this.http.delete(`${this.skillUrl}/step/${stepId}`, httpOptions);
   }
 }

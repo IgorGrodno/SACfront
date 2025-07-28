@@ -1,6 +1,5 @@
-<div class="skills-container">
+<div class="skills-container" *ngIf="selected === 'skilllist'">
   <h1 class="skills-title">Навыки</h1>
-
   <table class="skills-table" *ngIf="skills.length > 0; else noSkills">
     <thead>
       <tr>
