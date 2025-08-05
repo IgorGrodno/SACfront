@@ -1,4 +1,5 @@
 export interface SkillStep {
   id: number;
-  description: string;
+  name: string;
+  canDelete: boolean;
 }

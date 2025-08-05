@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
 import { RegisterResponse } from '../interfaces/registerResponse.interface';
@@ -13,32 +13,31 @@ interface LoginResponse {
   token: string;
 }
 
-const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-};
-
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private authUrl = 'http://localhost:8080/api/auth';
+  private readonly baseUrl = 'http://localhost:8080/api/auth';
+  private readonly httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    withCredentials: true,
+  };
 
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
+  public readonly currentUser$ = this.currentUserSubject.asObservable();
 
-  private loggedInSubject = new BehaviorSubject<boolean>(false);
-  public loggedIn$ = this.loggedInSubject.asObservable();
+  private readonly loggedInSubject = new BehaviorSubject<boolean>(false);
+  public readonly loggedIn$ = this.loggedInSubject.asObservable();
 
-  router: Router = inject(Router);
+  private readonly router: Router = inject(Router);
 
   constructor(
-    private http: HttpClient,
-    private storageService: StorageService
+    private readonly http: HttpClient,
+    private readonly storageService: StorageService
   ) {
     const storedUser = this.storageService.getUser();
-    if (storedUser && storedUser.username) {
-      this.currentUserSubject.next(storedUser);
-      this.loggedInSubject.next(true);
+    if (storedUser?.username) {
+      this.setCurrentUser(storedUser);
     }
   }
 
@@ -52,17 +51,22 @@ export class AuthService {
     this.storageService.saveUser(user);
   }
 
-  login(payload: { username: string; password: string }): Observable<User> {
+  login(credentials: { username: string; password: string }): Observable<User> {
     return this.http
-      .post<LoginResponse>(this.authUrl + '/signin', payload, httpOptions)
+      .post<LoginResponse>(
+        `${this.baseUrl}/signin`,
+        credentials,
+        this.httpOptions
+      )
       .pipe(
-        tap((res: LoginResponse) => {
+        tap((res) => {
           this.storageService.saveToken(res.token);
-          this.setCurrentUser({
+          const user: User = {
             id: res.id,
             username: res.username,
             roles: res.roles,
-          });
+          };
+          this.setCurrentUser(user);
         }),
         map((res) => ({
           id: res.id,
@@ -72,15 +76,17 @@ export class AuthService {
       );
   }
 
-  logout(): Observable<any> {
-    return this.http.post(this.authUrl + '/signout', {}, httpOptions).pipe(
-      tap(() => {
-        this.storageService.clean();
-        this.currentUserSubject.next(null);
-        this.loggedInSubject.next(false);
-        this.router.navigate(['/login']);
-      })
-    );
+  logout(): Observable<void> {
+    return this.http
+      .post<void>(`${this.baseUrl}/signout`, {}, this.httpOptions)
+      .pipe(
+        tap(() => {
+          this.storageService.clean();
+          this.currentUserSubject.next(null);
+          this.loggedInSubject.next(false);
+          this.router.navigate(['/login']);
+        })
+      );
   }
 
   register(payload: {
@@ -88,9 +94,9 @@ export class AuthService {
     password: string;
   }): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(
-      this.authUrl + '/register',
+      `${this.baseUrl}/register`,
       payload,
-      httpOptions
+      this.httpOptions
     );
   }
 

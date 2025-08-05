@@ -45,6 +45,12 @@ export class App {
           this.menuItems.set('Student Dashboard', '/student');
         }
       }
+      this.menuItems.set('Login', '/login');
+      this.menuItems.set('Registration', '/registration');
+      this.menuItems.set('Users List', '/users-list');
+      this.menuItems.set('Create Session', '/session-create');
+      this.menuItems.set('Session List', '/session-list');
+      this.menuItems.set('SkillCreate', '/skill-create');
     });
   }
 }

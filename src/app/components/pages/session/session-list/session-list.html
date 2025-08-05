@@ -1,0 +1,38 @@
+<h2>Список сессий</h2>
+
+<table class="session-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Дата начала</th>
+      <th>Дата окончания</th>
+      <th>Активна</th>
+      <th>Кол-во студентов</th>
+      <th>Номера студентов</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let session of sessions">
+      <td>{{ session.id }}</td>
+      <td>{{ session.startDate | date : "yyyy-MM-dd" }}</td>
+      <td>
+        {{ session.endDate ? (session.endDate | date : "yyyy-MM-dd") : "—" }}
+      </td>
+      <td>
+        <input type="checkbox" [checked]="session.active" disabled />
+      </td>
+      <td>{{ session.studentNumbers.length }}</td>
+      <td>{{ session.studentNumbers.join(", ") }}</td>
+      <td>
+        <button (click)="deleteSession(session.id!)">Удалить</button>
+        <button
+          (click)="deactivateSession(session.id!, session)"
+          [disabled]="!session.active"
+        >
+          Деактивировать
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>

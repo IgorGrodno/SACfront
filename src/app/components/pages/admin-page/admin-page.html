@@ -1,9 +1,0 @@
-<nav>
-  <button (click)="select('users')">Пользователи</button>
-  <button (click)="select('skills')">Навыки</button>
-</nav>
-
-<hr />
-
-<app-adminpageusers *ngIf="selected === 'users'"></app-adminpageusers>
-<app-adminpageskills *ngIf="selected === 'skills'"></app-adminpageskills>

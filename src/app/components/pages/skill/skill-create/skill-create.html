@@ -1,0 +1,59 @@
+<div class="skill-form">
+  <h2>Добавить Навык</h2>
+
+  <!-- Название навыка -->
+  <label>
+    Название навыка:
+    <input [(ngModel)]="skillName" placeholder="Введите название навыка" />
+  </label>
+
+  <!-- Название шага -->
+  <label>
+    Название шага:
+    <input [(ngModel)]="newStepName" placeholder="Введите название шага" />
+    <button (click)="addStep()">Добавить шаг</button>
+  </label>
+
+  <div class="lists-container">
+    <!-- Доступные шаги -->
+    <div class="step-list">
+      <h3>Доступные шаги</h3>
+      <div
+        #availableListContainer
+        cdkDropList
+        id="availableStepsList"
+        [cdkDropListData]="availableSteps"
+        [cdkDropListConnectedTo]="['skillStepsList']"
+        class="dropzone"
+        [style.height.px]="availableListHeight"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div class="step-item" *ngFor="let step of availableSteps" cdkDrag>
+          {{ step.name }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Шаги выбранного навыка -->
+    <div class="step-list">
+      <h3>Шаги навыка</h3>
+      <div
+        #skillListContainer
+        cdkDropList
+        id="skillStepsList"
+        [cdkDropListData]="skillSteps"
+        [cdkDropListConnectedTo]="['availableStepsList']"
+        class="dropzone"
+        [style.height.px]="skillListHeight"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div class="step-item" *ngFor="let step of skillSteps" cdkDrag>
+          {{ step.name }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопка добавления навыка -->
+  <button class="add-skill-button" (click)="saveSkill()">Добавить навык</button>
+</div>

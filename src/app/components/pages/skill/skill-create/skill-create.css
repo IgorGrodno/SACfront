@@ -1,0 +1,65 @@
+.skill-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+
+.lists-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.step-list {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 200px;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+.step-item {
+  background: #e0e0e0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  cursor: move;
+}
+
+.add-skill-button {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-skill-button:hover {
+  background-color: #45a049;
+}

@@ -1,0 +1,27 @@
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th *ngFor="let role of allRoles">{{ role }}</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.id }}</td>
+      <td>{{ user.username }}</td>
+      <td *ngFor="let role of allRoles">
+        <input
+          type="checkbox"
+          [checked]="hasRole(user, role)"
+          (change)="toggleRole(user, role)"
+        />
+      </td>
+      <td>
+        <button (click)="saveChanges(user)">Сохранить</button>
+        <button (click)="deleteUser(user.id)">Удалить</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

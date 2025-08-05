@@ -14,39 +14,54 @@ export class StorageService {
   }
 
   saveUser(user: User): void {
-    window.sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    this.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   getUser(): User | null {
-    const user = window.sessionStorage.getItem(this.USER_KEY);
-    if (user) {
-      return JSON.parse(user) as User;
+    const json = this.getItem(this.USER_KEY);
+    if (!json) return null;
+
+    try {
+      return JSON.parse(json) as User;
+    } catch {
+      this.removeUser();
+      return null;
     }
-    return null;
   }
 
   removeUser(): void {
-    window.sessionStorage.removeItem(this.USER_KEY);
+    this.removeItem(this.USER_KEY);
   }
 
   saveToken(token: string): void {
-    window.sessionStorage.setItem(this.AUTH_TOKEN, token);
+    this.setItem(this.AUTH_TOKEN, token);
   }
 
   getToken(): string | null {
-    return window.sessionStorage.getItem(this.AUTH_TOKEN);
+    return this.getItem(this.AUTH_TOKEN);
   }
 
   removeToken(): void {
-    window.sessionStorage.removeItem(this.AUTH_TOKEN);
+    this.removeItem(this.AUTH_TOKEN);
   }
 
   getUserRoles(): string[] {
-    const user = this.getUser();
-    return user?.roles ?? [];
+    return this.getUser()?.roles ?? [];
   }
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  private setItem(key: string, value: string): void {
+    window.sessionStorage.setItem(key, value);
+  }
+
+  private getItem(key: string): string | null {
+    return window.sessionStorage.getItem(key);
+  }
+
+  private removeItem(key: string): void {
+    window.sessionStorage.removeItem(key);
   }
 }
