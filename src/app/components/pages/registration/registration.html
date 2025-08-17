@@ -1,9 +1,12 @@
 <div class="registration-container">
   <h2 class="registration-title">Регистрация</h2>
 
-  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="username">Имя пользователя</label>
+  <form
+    [formGroup]="registrationForm"
+    (ngSubmit)="onSubmit()"
+    class="form-group"
+  >
+    <div>
       <input
         id="username"
         type="text"
@@ -25,7 +28,6 @@
     </div>
 
     <div class="form-group">
-      <label for="password">Пароль</label>
       <input
         id="password"
         type="password"
@@ -46,12 +48,10 @@
       </div>
     </div>
 
-    <button type="submit" class="submit-button">Зарегистрироваться</button>
-
     <div class="error" *ngIf="error">{{ error }}</div>
 
-    <div class="login-link">
-      Уже есть аккаунт?
+    <div class="loginControls">
+      <a (click)="onSubmit()">Зарегистрироваться</a>
       <a (click)="navigateTo('/login')">Войти</a>
     </div>
   </form>

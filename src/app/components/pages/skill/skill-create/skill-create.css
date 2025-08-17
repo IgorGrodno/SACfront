@@ -1,5 +1,9 @@
+:host {
+  width: 100%;
+}
+
 .skill-form {
-  max-width: 600px;
+  width: 100%;
   margin: 0 auto;
   padding: 16px;
   border: 1px solid #ccc;
@@ -48,6 +52,17 @@ input {
   padding: 6px 10px;
   margin-bottom: 6px;
   cursor: move;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.step-name {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .add-skill-button {
@@ -62,4 +77,9 @@ input {
 
 .add-skill-button:hover {
   background-color: #45a049;
+}
+
+.remove-btn {
+  width: max-content;
+  height: max-content;
 }

@@ -5,13 +5,7 @@ import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
 import { RegisterResponse } from '../interfaces/registerResponse.interface';
 import { User } from '../interfaces/user.interface';
-
-interface LoginResponse {
-  id: number;
-  username: string;
-  roles: string[];
-  token: string;
-}
+import { LoginResponse } from '../interfaces/loginResponse.interface';
 
 @Injectable({
   providedIn: 'root',

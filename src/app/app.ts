@@ -32,25 +32,23 @@ export class App {
         if (
           this.currentUser.roles?.includes('ROLE_ADMIN' as unknown as string)
         ) {
-          this.menuItems.set('Admin page', '/adminpage');
+          this.menuItems.set('Users List', '/users-list');
+          this.menuItems.set('Create Session', '/session-create');
+          this.menuItems.set('Session List', '/session-list');
+          this.menuItems.set('SkillCreate', '/skill-create');
         }
         if (
           this.currentUser.roles?.includes('ROLE_TEACHER' as unknown as string)
         ) {
-          this.menuItems.set('Skills', '/skills');
+          this.menuItems.set('Skill List', '/skill-list');
         }
         if (
           this.currentUser.roles?.includes('ROLE_STUDENT' as unknown as string)
         ) {
-          this.menuItems.set('Student Dashboard', '/student');
         }
       }
       this.menuItems.set('Login', '/login');
       this.menuItems.set('Registration', '/registration');
-      this.menuItems.set('Users List', '/users-list');
-      this.menuItems.set('Create Session', '/session-create');
-      this.menuItems.set('Session List', '/session-list');
-      this.menuItems.set('SkillCreate', '/skill-create');
     });
   }
 }

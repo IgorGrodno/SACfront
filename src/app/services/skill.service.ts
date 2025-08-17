@@ -17,8 +17,15 @@ export class SkillService {
 
   constructor(private readonly http: HttpClient) {}
 
-  public getAllSkills(): Observable<Skill[]> {
+  public getSkills(): Observable<Skill[]> {
     return this.http.get<Skill[]>(`${this.skillUrl}`, readonlyHttpOptions);
+  }
+
+  public getUserSkills(id: number): Observable<Skill[]> {
+    return this.http.get<Skill[]>(
+      `${this.skillUrl}/user/${id}`,
+      readonlyHttpOptions
+    );
   }
 
   public getSkill(id: number): Observable<Skill> {

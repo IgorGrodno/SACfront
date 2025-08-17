@@ -1,0 +1,15 @@
+.skill-card {
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+}
+
+.skill-card h3 {
+  margin-top: 0;
+}
+
+.skill-card ul {
+  padding-left: 20px;
+}

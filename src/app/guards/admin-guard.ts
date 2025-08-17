@@ -22,7 +22,9 @@ export class AdminGuard implements CanActivate {
     if (isLoggedIn && roles?.includes('ROLE_ADMIN' as unknown as string)) {
       return true;
     } else {
-      return this.router.parseUrl('/login');
+      alert('Доступ запрещен');
+      this.router.navigate(['/login']);
+      return false;
     }
   }
 }

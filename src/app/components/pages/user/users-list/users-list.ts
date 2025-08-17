@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../../services/user.service';
 import { User } from '../../../../interfaces/user.interface';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user',
@@ -14,7 +15,7 @@ export class UsersList implements OnInit {
   users: User[] = [];
   allRoles: string[] = ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'];
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit(): void {
     this.userService.getAllUsers().subscribe({
@@ -33,8 +34,8 @@ export class UsersList implements OnInit {
 
   saveChanges(user: User): void {
     this.userService.updateUser(user).subscribe({
-      next: () => console.log(`Роли пользователя ${user.username} обновлены.`),
-      error: (err) => console.error('Ошибка при обновлении пользователя:', err),
+      next: () => alert(`Роли пользователя ${user.username} обновлены.`),
+      error: (err) => alert('Ошибка при обновлении пользователя'),
     });
   }
 
@@ -52,5 +53,9 @@ export class UsersList implements OnInit {
         error: (err) => console.error('Ошибка при удалении пользователя:', err),
       });
     }
+  }
+
+  goToProfile(id: number) {
+    this.router.navigate(['/profile', id]);
   }
 }

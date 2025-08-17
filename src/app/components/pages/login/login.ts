@@ -35,7 +35,6 @@ export class Login {
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         alert('OK');
-        this.router.navigate(['/']);
       },
       error: (err) => {
         alert('Ошибка входа: ' + err.error.message);

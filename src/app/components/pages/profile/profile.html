@@ -1,0 +1,69 @@
+<div class="profile-container" *ngIf="userProfile">
+  <h2>{{ userProfile.secondName }} (ID: {{ userProfile.id }})</h2>
+
+  <form class="profile-form">
+    <label>
+      Имя:
+      <input type="text" [(ngModel)]="firstName" name="firstName" />
+    </label>
+
+    <label>
+      Фамилия:
+      <input type="text" [(ngModel)]="secondName" name="secondName" />
+    </label>
+
+    <label>
+      Отчество:
+      <input type="text" [(ngModel)]="fatherName" name="fatherName" />
+    </label>
+  </form>
+
+  <hr />
+
+  <div class="skills-wrapper" style="display: flex; gap: 20px">
+    <!-- Доступные навыки -->
+    <div class="skill-list" [style.height.px]="availableSkillsListHeight">
+      <h3>Доступные навыки</h3>
+      <div
+        cdkDropList
+        id="availableList"
+        [cdkDropListData]="availableSkills"
+        [cdkDropListConnectedTo]="['userList']"
+        class="drop-list"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div
+          class="skill-item"
+          *ngFor="let skill of availableSkills"
+          cdkDrag
+          #availableSkillRef
+        >
+          {{ skill.name }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Навыки пользователя -->
+    <div class="skill-list" [style.height.px]="userSkillsListHeight">
+      <h3>Навыки пользователя</h3>
+      <div
+        cdkDropList
+        id="userList"
+        [cdkDropListData]="userSkills"
+        [cdkDropListConnectedTo]="['availableList']"
+        class="drop-list"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div
+          class="skill-item"
+          *ngFor="let skill of userSkills"
+          cdkDrag
+          #userSkillRef
+        >
+          {{ skill.name }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<button (click)="saveProfile()">Сохранить профиль</button>

@@ -1,1 +1,15 @@
-<p>skill-list works!</p>
+<div *ngIf="skills.length > 0; else noSkills">
+  <div *ngFor="let skill of skills" class="skill-card">
+    <h3>{{ skill.name }}</h3>
+
+    <ul>
+      <li *ngFor="let step of skill.steps">
+        {{ step.name }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+<ng-template #noSkills>
+  <p>Навыков нет.</p>
+</ng-template>
