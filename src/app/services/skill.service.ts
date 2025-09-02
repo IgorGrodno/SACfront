@@ -21,15 +21,22 @@ export class SkillService {
     return this.http.get<Skill[]>(`${this.skillUrl}`, readonlyHttpOptions);
   }
 
-  public getUserSkills(id: number): Observable<Skill[]> {
+  public getDisciplineSkills(id: number): Observable<Skill[]> {
     return this.http.get<Skill[]>(
-      `${this.skillUrl}/user/${id}`,
+      `${this.skillUrl}/discipline/${id}`,
       readonlyHttpOptions
     );
   }
 
   public getSkill(id: number): Observable<Skill> {
     return this.http.get<Skill>(`${this.skillUrl}/${id}`, readonlyHttpOptions);
+  }
+
+  public getSkillSteps(skillId: number): Observable<SkillStep[]> {
+    return this.http.get<SkillStep[]>(
+      `${this.skillUrl}/steps/${skillId}`,
+      readonlyHttpOptions
+    );
   }
 
   public createSkill(skill: Skill): Observable<Skill> {

@@ -21,6 +21,8 @@ import { Skill } from '../../../../interfaces/skill.interface';
 import { SkillStep } from '../../../../interfaces/skillStep.interface';
 import { SkillService } from '../../../../services/skill.service';
 import { StepService } from '../../../../services/step.service';
+import { DisciplineService } from '../../../../services/discipline.service';
+import { Discipline } from '../../../../interfaces/discipline.interface';
 
 @Component({
   selector: 'app-skill-create',
@@ -30,8 +32,11 @@ import { StepService } from '../../../../services/step.service';
   styleUrls: ['./skill-create.css'],
 })
 export class SkillCreate implements OnInit, AfterViewInit {
-  skillName = '';
+  newskillName = '';
   newStepName = '';
+
+  availableSkills: Skill[] = [];
+  skills: Skill[] = [];
 
   availableSteps: SkillStep[] = [];
   skillSteps: SkillStep[] = [];
@@ -49,7 +54,8 @@ export class SkillCreate implements OnInit, AfterViewInit {
     private skillService: SkillService,
     private stepService: StepService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private disciplineService: DisciplineService
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +73,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
       this.triggerHeightUpdate()
     );
     this.skillStepElements.changes.subscribe(() => this.triggerHeightUpdate());
+
     this.triggerHeightUpdate();
   }
 
@@ -76,6 +83,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
         this.availableStepElements
       );
       this.skillListHeight = this.calculateTotalHeight(this.skillStepElements);
+
       this.cdr.detectChanges();
     });
   }
@@ -87,6 +95,8 @@ export class SkillCreate implements OnInit, AfterViewInit {
     });
     return total;
   }
+
+  // ---------------- STEPS ----------------
 
   addStep(): void {
     if (!this.newStepName.trim()) return;
@@ -146,18 +156,19 @@ export class SkillCreate implements OnInit, AfterViewInit {
   }
 
   saveSkill(): void {
-    if (!this.skillName.trim() || this.skillSteps.length === 0) return;
+    if (!this.newskillName.trim() || this.skillSteps.length === 0) return;
 
     const skill: Skill = {
       id: 0,
-      name: this.skillName.trim(),
+      name: this.newskillName.trim(),
       steps: this.skillSteps,
+      canDelete: true,
     };
 
     this.skillService.createSkill(skill).subscribe({
       next: () => {
         console.log('Навык добавлен');
-        this.skillName = '';
+        this.newskillName = '';
         this.skillSteps = [];
 
         this.stepService.getAllSteps().subscribe({

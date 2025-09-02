@@ -4,4 +4,5 @@ export interface Skill {
   id: number;
   name: string;
   steps: SkillStep[];
+  canDelete: boolean;
 }

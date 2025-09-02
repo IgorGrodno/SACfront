@@ -22,6 +22,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { switchMap, forkJoin } from 'rxjs';
+import { DisciplineService } from '../../../services/discipline.service';
+import { Discipline } from '../../../interfaces/discipline.interface';
 
 @Component({
   selector: 'app-profile',
@@ -33,13 +35,14 @@ import { switchMap, forkJoin } from 'rxjs';
 export class ProfilePage {
   @Input() userId!: number;
   userProfile?: Profile;
+  isAdmin: boolean = false;
 
   firstName: string = '';
   secondName: string = '';
   fatherName: string = '';
 
-  availableSkills: Skill[] = [];
-  userSkills: Skill[] = [];
+  availableDisciplines: Discipline[] = [];
+  userDisciplines: Discipline[] = [];
 
   availableSkillsListHeight = 0;
   userSkillsListHeight = 0;
@@ -52,7 +55,7 @@ export class ProfilePage {
   constructor(
     private authService: AuthService,
     private profileService: ProfileService,
-    private skillService: SkillService,
+    private disciplineService: DisciplineService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
@@ -68,22 +71,24 @@ export class ProfilePage {
         }),
         switchMap((profile) => {
           this.userProfile = profile;
-
           this.firstName = profile.firstName || '';
           this.secondName = profile.secondName || '';
           this.fatherName = profile.fatherName || '';
           return forkJoin({
-            userSkills: this.skillService.getUserSkills(profile.id),
-            availableSkills: this.skillService.getSkills(),
+            userDisciplines: this.disciplineService.getUserDisciplines(
+              profile.id
+            ),
+            availableDisciplines: this.disciplineService.getDisciplines(),
           });
         })
       )
-      .subscribe(({ userSkills, availableSkills }) => {
-        this.userSkills = userSkills;
-        this.availableSkills = availableSkills.filter(
-          (skill) => !userSkills.some((s) => s.id === skill.id)
+      .subscribe(({ userDisciplines, availableDisciplines }) => {
+        this.userDisciplines = userDisciplines;
+        this.availableDisciplines = availableDisciplines.filter(
+          (discipline) => !userDisciplines.some((s) => s.id === discipline.id)
         );
       });
+    const currentUser = this.authService.getCurrentUser();
   }
 
   ngAfterViewInit(): void {
@@ -114,7 +119,7 @@ export class ProfilePage {
     return total;
   }
 
-  drop(event: CdkDragDrop<Skill[]>) {
+  drop(event: CdkDragDrop<Discipline[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -139,7 +144,7 @@ export class ProfilePage {
     this.userProfile.fatherName = this.fatherName.trim();
 
     this.profileService
-      .updateProfile(this.userProfile, this.userSkills)
+      .updateProfile(this.userProfile, this.userDisciplines)
       .subscribe({
         next: (updatedProfile) => {
           this.userProfile = updatedProfile;

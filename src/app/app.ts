@@ -36,11 +36,15 @@ export class App {
           this.menuItems.set('Create Session', '/session-create');
           this.menuItems.set('Session List', '/session-list');
           this.menuItems.set('SkillCreate', '/skill-create');
+          this.menuItems.set('DisciplineCreate', '/discipline-create');
+          this.menuItems.set('DisciplineList', '/discipline-list');
+          this.menuItems.set('DisciplineListExam', '');
+          this.menuItems.set('Skill-list', '/skill-list');
         }
         if (
           this.currentUser.roles?.includes('ROLE_TEACHER' as unknown as string)
         ) {
-          this.menuItems.set('Skill List', '/skill-list');
+          this.menuItems.set('DisciplineListExam', '');
         }
         if (
           this.currentUser.roles?.includes('ROLE_STUDENT' as unknown as string)

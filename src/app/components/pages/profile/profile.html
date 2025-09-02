@@ -27,14 +27,14 @@
       <div
         cdkDropList
         id="availableList"
-        [cdkDropListData]="availableSkills"
+        [cdkDropListData]="availableDisciplines"
         [cdkDropListConnectedTo]="['userList']"
         class="drop-list"
         (cdkDropListDropped)="drop($event)"
       >
         <div
           class="skill-item"
-          *ngFor="let skill of availableSkills"
+          *ngFor="let skill of availableDisciplines"
           cdkDrag
           #availableSkillRef
         >
@@ -49,14 +49,14 @@
       <div
         cdkDropList
         id="userList"
-        [cdkDropListData]="userSkills"
+        [cdkDropListData]="userDisciplines"
         [cdkDropListConnectedTo]="['availableList']"
         class="drop-list"
         (cdkDropListDropped)="drop($event)"
       >
         <div
           class="skill-item"
-          *ngFor="let skill of userSkills"
+          *ngFor="let skill of userDisciplines"
           cdkDrag
           #userSkillRef
         >

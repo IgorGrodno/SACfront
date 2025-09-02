@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Profile } from '../interfaces/profile.interface';
 import { Observable } from 'rxjs/internal/Observable';
 import { Skill } from '../interfaces/skill.interface';
+import { Discipline } from '../interfaces/discipline.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -21,10 +22,13 @@ export class ProfileService {
     return this.http.get<Profile>(`${this.baseUrl}/${id}`, this.httpOptions);
   }
 
-  updateProfile(profile: Profile, skills: Skill[]): Observable<Profile> {
+  updateProfile(
+    profile: Profile,
+    disciplines: Discipline[]
+  ): Observable<Profile> {
     const payload = {
       profile,
-      skills,
+      disciplines,
     };
     console.log('Updating profile with payload:', payload);
     return this.http.put<Profile>(`${this.baseUrl}/${profile.id}`, payload);

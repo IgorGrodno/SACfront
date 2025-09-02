@@ -9,11 +9,26 @@ import { SkillList } from './components/pages/skill/skill-list/skill-list';
 import { AdminGuard } from './guards/admin-guard';
 import { AuthGuard } from './guards/auth-guard';
 import { ProfilePage } from './components/pages/profile/profile';
+import { DisciplineCreate } from './components/pages/discipline/discipline-create/discipline-create';
+import { DisciplineList } from './components/pages/discipline/discipline-list/discipline-list';
+import { DisciplineListExam } from './components/pages/discipline/discipline-list-exam/discipline-list-exam';
+import { SkillExam } from './components/pages/skill/skill-exam/skill-exam';
 
 export const routes: Routes = [
   {
     path: '',
-    component: Login,
+    component: DisciplineListExam,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'discipline-create',
+    component: DisciplineCreate,
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'discipline-list',
+    component: DisciplineList,
+    canActivate: [AdminGuard],
   },
   {
     path: 'profile',
@@ -56,6 +71,16 @@ export const routes: Routes = [
   {
     path: 'skill-list',
     component: SkillList,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'skill-list/:id',
+    component: SkillList,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'skill-exam/:id',
+    component: SkillExam,
     canActivate: [AuthGuard],
   },
   {

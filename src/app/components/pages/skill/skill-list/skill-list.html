@@ -1,15 +1,23 @@
-<div *ngIf="skills.length > 0; else noSkills">
-  <div *ngFor="let skill of skills" class="skill-card">
-    <h3>{{ skill.name }}</h3>
+<div class="p-6">
+  <!-- Заголовок -->
+  <h2 class="text-2xl font-bold mb-4">
+    {{ disciplineId ? "Навыки дисциплины" : "Все навыки" }}
+  </h2>
 
-    <ul>
-      <li *ngFor="let step of skill.steps">
-        {{ step.name }}
-      </li>
-    </ul>
+  <!-- Если нет навыков -->
+  <div *ngIf="skills.length === 0" class="text-gray-500 italic">
+    Навыки не найдены
   </div>
-</div>
 
-<ng-template #noSkills>
-  <p>Навыков нет.</p>
-</ng-template>
+  <!-- Список навыков -->
+  <ul class="space-y-2">
+    <li
+      *ngFor="let skill of skills"
+      class="p-4 rounded-lg shadow bg-white hover:bg-gray-50 cursor-pointer transition"
+    >
+      <div class="font-semibold text-lg" (click)="goSkillExam(skill.id)">
+        {{ skill.name }}
+      </div>
+    </li>
+  </ul>
+</div>

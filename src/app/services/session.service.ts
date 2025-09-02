@@ -27,8 +27,8 @@ export class SessionService {
     );
   }
 
-  getActiveSession(): Observable<Session> {
-    return this.http.get<Session>(
+  getActiveSessions(): Observable<Session[]> {
+    return this.http.get<Session[]>(
       `${this.sessionUrl}/active`,
       readonlyHttpOptions
     );
