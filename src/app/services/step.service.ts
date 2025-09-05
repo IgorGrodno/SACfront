@@ -12,25 +12,41 @@ const readonlyHttpOptions = {
   providedIn: 'root',
 })
 export class StepService {
-  private readonly skillUrl = 'http://localhost:8080/api/steps';
+  private readonly stepUrl = 'http://localhost:8080/api/steps';
 
   constructor(private readonly http: HttpClient) {}
 
-  public getAllSteps(): Observable<SkillStep[]> {
-    return this.http.get<SkillStep[]>(`${this.skillUrl}`, readonlyHttpOptions);
+  // ===== Все шаги =====
+  getAllSteps(): Observable<SkillStep[]> {
+    return this.http.get<SkillStep[]>(this.stepUrl, readonlyHttpOptions);
   }
 
-  public addStep(step: SkillStep): Observable<SkillStep> {
-    return this.http.post<SkillStep>(
-      `${this.skillUrl}`,
+  // ===== Получить шаг по ID =====
+  getStepById(stepId: number): Observable<SkillStep> {
+    return this.http.get<SkillStep>(
+      `${this.stepUrl}/${stepId}`,
+      readonlyHttpOptions
+    );
+  }
+
+  // ===== Добавить шаг =====
+  addStep(step: Omit<SkillStep, 'id'>): Observable<SkillStep> {
+    return this.http.post<SkillStep>(this.stepUrl, step, readonlyHttpOptions);
+  }
+
+  // ===== Обновить шаг =====
+  updateStep(stepId: number, step: Partial<SkillStep>): Observable<SkillStep> {
+    return this.http.put<SkillStep>(
+      `${this.stepUrl}/${stepId}`,
       step,
       readonlyHttpOptions
     );
   }
 
-  public removeStep(stepId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.skillUrl}/${stepId}`,
+  // ===== Удалить шаг =====
+  removeStep(stepId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.stepUrl}/${stepId}`,
       readonlyHttpOptions
     );
   }

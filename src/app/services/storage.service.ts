@@ -6,11 +6,18 @@ import { User } from '../interfaces/user.interface';
 })
 export class StorageService {
   private readonly USER_KEY = 'auth-user';
-  private readonly AUTH_TOKEN = 'auth_token';
+  private readonly AUTH_TOKEN = 'auth-token';
+
+  // 🔹 Флаг для переключения между sessionStorage и localStorage
+  private persistent = false;
 
   clean(): void {
     this.removeUser();
     this.removeToken();
+  }
+
+  setPersistentMode(persistent: boolean): void {
+    this.persistent = persistent;
   }
 
   saveUser(user: User): void {
@@ -18,15 +25,7 @@ export class StorageService {
   }
 
   getUser(): User | null {
-    const json = this.getItem(this.USER_KEY);
-    if (!json) return null;
-
-    try {
-      return JSON.parse(json) as User;
-    } catch {
-      this.removeUser();
-      return null;
-    }
+    return this.getJson<User>(this.USER_KEY);
   }
 
   removeUser(): void {
@@ -49,19 +48,39 @@ export class StorageService {
     return this.getUser()?.roles ?? [];
   }
 
+  hasRole(role: string): boolean {
+    return this.getUserRoles().includes(role);
+  }
+
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
 
+  // ===== Универсальные методы =====
   private setItem(key: string, value: string): void {
-    window.sessionStorage.setItem(key, value);
+    this.storage.setItem(key, value);
   }
 
   private getItem(key: string): string | null {
-    return window.sessionStorage.getItem(key);
+    return this.storage.getItem(key);
   }
 
   private removeItem(key: string): void {
-    window.sessionStorage.removeItem(key);
+    this.storage.removeItem(key);
+  }
+
+  private getJson<T>(key: string): T | null {
+    const raw = this.getItem(key);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      this.removeItem(key);
+      return null;
+    }
+  }
+
+  private get storage(): Storage {
+    return this.persistent ? localStorage : sessionStorage;
   }
 }

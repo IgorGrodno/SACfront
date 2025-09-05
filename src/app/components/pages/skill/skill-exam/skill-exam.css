@@ -1,0 +1,171 @@
+.exam-container {
+  max-width: 750px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #f8f9fb, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  font-family: "Inter", sans-serif;
+}
+
+.exam-container h2 {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1f2937;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+select {
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+  outline: none;
+}
+
+.single-session {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Шаги навыка */
+.steps-section h3 {
+  margin-top: 1.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.step-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.step-item:hover {
+  background: #e0f2fe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Блок ошибок */
+.errors-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.error-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  background: #fef3f3;
+  border: 1px solid #fca5a5;
+  transition: all 0.2s ease;
+}
+
+.error-item:hover {
+  background: #fee2e2;
+  transform: translateY(-1px);
+}
+
+/* Поля ввода с кнопками */
+.number-input {
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+}
+
+.number-input input {
+  width: 60px;
+  text-align: center;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  outline: none;
+}
+
+.number-input button {
+  width: 40px;
+  height: 40px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  background: #e5e7eb;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.number-input button:hover {
+  background: #d1d5db;
+}
+
+.number-input button:active {
+  transform: scale(0.95);
+}
+
+.number-input button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+/* Кнопка отправки */
+.btn-submit {
+  margin-top: 2rem;
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: white;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-submit:hover {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+.btn-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}

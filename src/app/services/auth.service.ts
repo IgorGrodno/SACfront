@@ -30,9 +30,19 @@ export class AuthService {
     private readonly storageService: StorageService
   ) {
     const storedUser = this.storageService.getUser();
-    if (storedUser?.username) {
+    const token = this.storageService.getToken();
+
+    if (storedUser && token) {
       this.setCurrentUser(storedUser);
     }
+  }
+
+  private buildUser(res: LoginResponse): User {
+    return {
+      id: res.id,
+      username: res.username,
+      roles: res.roles,
+    };
   }
 
   getCurrentUser(): User | null {
@@ -55,18 +65,9 @@ export class AuthService {
       .pipe(
         tap((res) => {
           this.storageService.saveToken(res.token);
-          const user: User = {
-            id: res.id,
-            username: res.username,
-            roles: res.roles,
-          };
-          this.setCurrentUser(user);
+          this.setCurrentUser(this.buildUser(res));
         }),
-        map((res) => ({
-          id: res.id,
-          username: res.username,
-          roles: res.roles,
-        }))
+        map((res) => this.buildUser(res))
       );
   }
 
@@ -94,7 +95,7 @@ export class AuthService {
     );
   }
 
-  isLoggedIn(): Observable<boolean> {
-    return this.loggedIn$;
+  isLoggedIn(): boolean {
+    return this.loggedInSubject.value;
   }
 }

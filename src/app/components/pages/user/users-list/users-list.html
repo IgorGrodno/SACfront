@@ -1,9 +1,11 @@
-<table border="1" cellpadding="8" cellspacing="0">
+<table class="users-table">
   <thead>
     <tr>
       <th>ID</th>
       <th>Username</th>
-      <th *ngFor="let role of allRoles">{{ role }}</th>
+      <th>Администратор</th>
+      <th>Экзаменатор</th>
+      <th>Студент</th>
       <th>Действия</th>
     </tr>
   </thead>
@@ -11,17 +13,31 @@
     <tr *ngFor="let user of users">
       <td>{{ user.id }}</td>
       <td>{{ user.username }}</td>
-      <td *ngFor="let role of allRoles">
+      <td>
         <input
           type="checkbox"
-          [checked]="hasRole(user, role)"
-          (change)="toggleRole(user, role)"
+          [checked]="hasRole(user, 'ROLE_ADMIN')"
+          (change)="toggleRole(user, 'ROLE_ADMIN')"
         />
       </td>
       <td>
+        <input
+          type="checkbox"
+          [checked]="hasRole(user, 'ROLE_TEACHER')"
+          (change)="toggleRole(user, 'ROLE_TEACHER')"
+        />
+      </td>
+      <td>
+        <input
+          type="checkbox"
+          [checked]="hasRole(user, 'ROLE_STUDENT')"
+          (change)="toggleRole(user, 'ROLE_STUDENT')"
+        />
+      </td>
+      <td class="actions">
         <button (click)="saveChanges(user)">Сохранить</button>
         <button (click)="deleteUser(user.id)">Удалить</button>
-        <button (click)="goToProfile(user.id)">Перейти в профиль</button>
+        <button (click)="goToProfile(user.id)">Профиль</button>
       </td>
     </tr>
   </tbody>

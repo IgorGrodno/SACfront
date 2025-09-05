@@ -1,8 +1,7 @@
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Profile } from '../interfaces/profile.interface';
-import { Observable } from 'rxjs/internal/Observable';
-import { Skill } from '../interfaces/skill.interface';
 import { Discipline } from '../interfaces/discipline.interface';
 
 @Injectable({
@@ -26,15 +25,16 @@ export class ProfileService {
     profile: Profile,
     disciplines: Discipline[]
   ): Observable<Profile> {
-    const payload = {
-      profile,
-      disciplines,
-    };
+    const payload = { profile, disciplines };
     console.log('Updating profile with payload:', payload);
-    return this.http.put<Profile>(`${this.baseUrl}/${profile.id}`, payload);
+    return this.http.put<Profile>(
+      `${this.baseUrl}/${profile.id}`,
+      payload,
+      this.httpOptions // 🔹 добавлено!
+    );
   }
 
-  deleteProfile(id: number) {
-    return this.http.delete(`${this.baseUrl}/${id}`, this.httpOptions);
+  deleteProfile(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, this.httpOptions);
   }
 }

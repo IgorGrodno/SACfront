@@ -16,18 +16,35 @@ export class UserService {
 
   constructor(private readonly http: HttpClient) {}
 
+  // 🔹 Получить всех пользователей
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.baseUrl}`, this.httpOptions);
+    return this.http.get<User[]>(this.baseUrl, this.httpOptions);
   }
 
+  // 🔹 Получить пользователя по id
+  getUserById(userId: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/${userId}`, this.httpOptions);
+  }
+
+  // 🔹 Создать нового пользователя
+  createUser(user: User): Observable<User> {
+    return this.http.post<User>(this.baseUrl, user, this.httpOptions);
+  }
+
+  // 🔹 Обновить пользователя
+  updateUser(user: User): Observable<User> {
+    return this.http.put<User>(
+      `${this.baseUrl}/${user.id}`,
+      user,
+      this.httpOptions
+    );
+  }
+
+  // 🔹 Удалить пользователя
   deleteUser(userId: number): Observable<void> {
     return this.http.delete<void>(
       `${this.baseUrl}/${userId}`,
       this.httpOptions
     );
-  }
-
-  updateUser(user: User): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}`, user, this.httpOptions);
   }
 }

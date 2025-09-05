@@ -5,7 +5,7 @@
   <div class="form-group">
     <label for="session">Сессия:</label>
     <ng-container *ngIf="activeSessionList.length === 1; else multipleSessions">
-      <p>Сессия №{{ activeSessionList[0].id }}</p>
+      <p class="single-session">Сессия №{{ activeSessionList[0].id }}</p>
     </ng-container>
 
     <ng-template #multipleSessions>
@@ -14,7 +14,6 @@
         [(ngModel)]="currentSessionId"
         (change)="onSessionChange()"
         required
-        class="form-control"
       >
         <option [ngValue]="undefined" disabled>Выберите сессию</option>
         <option
@@ -29,60 +28,111 @@
 
   <!-- Выбор студента -->
   <div class="form-group">
+    <label for="studentSearch">Поиск студента:</label>
+    <input
+      id="studentSearch"
+      type="text"
+      [(ngModel)]="studentSearch"
+      (input)="filterStudents(studentSelect)"
+      placeholder="Введите номер студента"
+      class="form-control"
+    />
+
     <label for="student">Студент:</label>
     <select
+      #studentSelect
       id="student"
       [(ngModel)]="currentStudentId"
       required
       class="form-control"
+      size="5"
     >
       <option [ngValue]="undefined" disabled>Выберите студента</option>
-      <option *ngFor="let student of studentIds" [ngValue]="student">
+      <option *ngFor="let student of filteredStudents" [ngValue]="student">
         Студент №{{ student }}
       </option>
     </select>
   </div>
 
-  <!-- Оценка шагов навыка -->
   <div class="steps-section">
     <h3>Шаги навыка</h3>
     <div *ngFor="let step of skillSteps; let i = index" class="step-item">
-      <label>
-        {{ step.name }}
-        <select [(ngModel)]="stepScores[i]" class="form-control" required>
-          <option [ngValue]="0">0</option>
-          <option [ngValue]="1">1</option>
-          <option [ngValue]="2">2</option>
-        </select>
-      </label>
+      <span>{{ step.name }}</span>
+      <div class="number-input">
+        <button type="button" (click)="decStep(i)" [disabled]="getStep(i) <= 0">
+          −
+        </button>
+
+        <input
+          type="text"
+          [value]="getStep(i)"
+          (keypress)="onStepKeyPress($event)"
+          (blur)="onStepBlur(i, $event)"
+          readonly="false"
+        />
+
+        <button type="button" (click)="incStep(i)" [disabled]="getStep(i) >= 2">
+          +
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Ошибки -->
   <div class="errors-section">
-    <label>
-      Грубые ошибки:
-      <input
-        type="number"
-        [(ngModel)]="grossErrors"
-        min="0"
-        max="100"
-        class="form-control"
-        required
-      />
-    </label>
+    <div class="error-item">
+      <label>Грубые ошибки:</label>
+      <div class="number-input">
+        <button
+          type="button"
+          (click)="decGross()"
+          [disabled]="grossErrors <= 0"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          [ngModel]="grossErrors"
+          (ngModelChange)="onGrossChange($event)"
+          min="0"
+          max="100"
+        />
+        <button
+          type="button"
+          (click)="incGross()"
+          [disabled]="grossErrors >= 100"
+        >
+          +
+        </button>
+      </div>
+    </div>
 
-    <label>
-      Мелкие ошибки:
-      <input
-        type="number"
-        [(ngModel)]="minorErrors"
-        min="0"
-        max="100"
-        class="form-control"
-        required
-      />
-    </label>
+    <div class="error-item">
+      <label>Мелкие ошибки:</label>
+      <div class="number-input">
+        <button
+          type="button"
+          (click)="decMinor()"
+          [disabled]="minorErrors <= 0"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          [ngModel]="minorErrors"
+          (ngModelChange)="onMinorChange($event)"
+          min="0"
+          max="100"
+        />
+        <button
+          type="button"
+          (click)="incMinor()"
+          [disabled]="minorErrors >= 100"
+        >
+          +
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Кнопка отправки -->

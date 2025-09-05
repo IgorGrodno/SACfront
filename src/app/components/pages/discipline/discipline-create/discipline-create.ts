@@ -9,10 +9,13 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  OnDestroy,
   QueryList,
   ViewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Discipline } from '../../../../interfaces/discipline.interface';
 import { Skill } from '../../../../interfaces/skill.interface';
 import { DisciplineService } from '../../../../services/discipline.service';
@@ -22,22 +25,24 @@ import { SkillService } from '../../../../services/skill.service';
   selector: 'app-discipline-create',
   imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './discipline-create.html',
-  styleUrl: './discipline-create.css',
+  styleUrls: ['./discipline-create.css'],
 })
-export class DisciplineCreate {
+export class DisciplineCreate implements OnDestroy {
   constructor(
     private skillService: SkillService,
     private cdr: ChangeDetectorRef,
     private disciplineService: DisciplineService
   ) {}
 
+  private destroy$ = new Subject<void>();
+
   newDisciplineName = '';
 
-  // Списки для перетаскивания
+  // списки для drag&drop
   availableSkillsForDiscipline: Skill[] = [];
   disciplineSkills: Skill[] = [];
 
-  // Все дисциплины
+  // дисциплины
   availableDisciplines: Discipline[] = [];
 
   // refs для подсчёта высоты
@@ -51,31 +56,40 @@ export class DisciplineCreate {
   disciplineListHeight = 0;
 
   ngOnInit(): void {
-    this.skillService.getSkills().subscribe({
-      next: (data) => {
-        this.availableSkillsForDiscipline = data;
-        this.triggerHeightUpdate();
-      },
-      error: (err) => console.error('Ошибка загрузки навыков:', err),
-    });
+    this.skillService
+      .getSkills()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.availableSkillsForDiscipline = data;
+          this.triggerHeightUpdate();
+        },
+        error: (err) => console.error('Ошибка загрузки навыков:', err),
+      });
 
-    this.disciplineService.getDisciplines().subscribe({
-      next: (data) => {
-        this.availableDisciplines = data;
-        this.triggerHeightUpdate();
-      },
-      error: (err) => console.error('Ошибка загрузки дисциплин:', err),
-    });
+    this.disciplineService
+      .getDisciplines()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.availableDisciplines = data;
+          this.triggerHeightUpdate();
+        },
+        error: (err) => console.error('Ошибка загрузки дисциплин:', err),
+      });
+
+    this.availableSkillElements?.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
+
+    this.disciplineSkillElements?.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
   }
 
-  ngAfterViewInit(): void {
-    this.availableSkillElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    this.disciplineSkillElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    this.triggerHeightUpdate();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   dropSkill(event: CdkDragDrop<Skill[]>) {
@@ -97,56 +111,58 @@ export class DisciplineCreate {
   }
 
   saveDiscipline(): void {
-    if (!this.newDisciplineName.trim() || this.disciplineSkills.length === 0)
+    if (!this.newDisciplineName.trim() || this.disciplineSkills.length === 0) {
       return;
+    }
 
-    const discipline: Discipline = {
-      id: 0,
+    const newDiscipline: Discipline = {
+      id: 0, // пусть бэк выставит id
       name: this.newDisciplineName.trim(),
       skills: this.disciplineSkills,
     };
 
-    this.disciplineService.createDiscipline(discipline).subscribe({
-      next: () => {
-        console.log('Дисциплина добавлена');
-        this.newDisciplineName = '';
-        this.disciplineSkills = [];
+    this.disciplineService
+      .createDiscipline(newDiscipline)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (created) => {
+          console.log('Дисциплина добавлена');
+          this.newDisciplineName = '';
+          this.disciplineSkills = [];
 
-        // обновляем списки
-        this.skillService.getSkills().subscribe({
-          next: (data) => {
-            this.availableSkillsForDiscipline = data;
-            this.triggerHeightUpdate();
-          },
-          error: (err) => console.error('Ошибка загрузки навыков:', err),
-        });
+          // обновляем локально без повторных запросов
+          this.availableDisciplines.push(created);
 
-        this.disciplineService.getDisciplines().subscribe({
-          next: (data) => {
-            this.availableDisciplines = data;
-            this.triggerHeightUpdate();
-          },
-          error: (err) => console.error('Ошибка загрузки дисциплин:', err),
-        });
-      },
-      error: (err) => console.error('Ошибка при добавлении дисциплины:', err),
-    });
+          // удаляем выбранные навыки из доступных
+          const usedIds = new Set(
+            (newDiscipline.skills ?? []).map((s) => s.id)
+          );
+          this.availableSkillsForDiscipline =
+            this.availableSkillsForDiscipline.filter((s) => !usedIds.has(s.id));
+
+          this.triggerHeightUpdate();
+        },
+        error: (err) => console.error('Ошибка при добавлении дисциплины:', err),
+      });
   }
 
   removeDiscipline(id: number): void {
-    this.disciplineService.deleteDiscipline(id).subscribe({
-      next: () => {
-        this.availableDisciplines = this.availableDisciplines.filter(
-          (d) => d.id !== id
-        );
-        this.triggerHeightUpdate();
-      },
-      error: (err) => console.error('Ошибка удаления дисциплины:', err),
-    });
+    this.disciplineService
+      .deleteDiscipline(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.availableDisciplines = this.availableDisciplines.filter(
+            (d) => d.id !== id
+          );
+          this.triggerHeightUpdate();
+        },
+        error: (err) => console.error('Ошибка удаления дисциплины:', err),
+      });
   }
 
   private triggerHeightUpdate(): void {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       this.availableDisciplineListHeight = this.calculateTotalHeight(
         this.availableSkillElements
       );
@@ -158,7 +174,8 @@ export class DisciplineCreate {
   }
 
   private calculateTotalHeight(elements: QueryList<ElementRef>): number {
-    let total = 80;
+    const base = 80; // вынес в константу
+    let total = base;
     elements.forEach((el) => {
       total += el.nativeElement.offsetHeight || 0;
     });

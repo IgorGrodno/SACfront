@@ -25,10 +25,18 @@
       <td>{{ session.studentNumbers.length }}</td>
       <td>{{ session.studentNumbers.join(", ") }}</td>
       <td>
-        <button (click)="deleteSession(session.id!)">Удалить</button>
         <button
-          (click)="deactivateSession(session.id!, session)"
-          [disabled]="!session.active"
+          *ngIf="!session.active"
+          class="activate"
+          (click)="activateSession(session.id!, true)"
+        >
+          Активировать
+        </button>
+
+        <button
+          *ngIf="session.active"
+          class="deactivate"
+          (click)="activateSession(session.id!, false)"
         >
           Деактивировать
         </button>

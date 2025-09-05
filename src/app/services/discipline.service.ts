@@ -1,8 +1,6 @@
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Skill } from '../interfaces/skill.interface';
-import { SkillStep } from '../interfaces/skillStep.interface';
 import { Discipline } from '../interfaces/discipline.interface';
 
 const readonlyHttpOptions = {
@@ -14,24 +12,25 @@ const readonlyHttpOptions = {
   providedIn: 'root',
 })
 export class DisciplineService {
-  private readonly skillUrl = 'http://localhost:8080/api/disciplines';
+  private readonly disciplineUrl = 'http://localhost:8080/api/disciplines';
 
   constructor(private readonly http: HttpClient) {}
 
+  private url(id?: number): string {
+    return id ? `${this.disciplineUrl}/${id}` : this.disciplineUrl;
+  }
+
   public getDisciplines(): Observable<Discipline[]> {
-    return this.http.get<Discipline[]>(`${this.skillUrl}`, readonlyHttpOptions);
+    return this.http.get<Discipline[]>(this.url(), readonlyHttpOptions);
   }
 
   public getDiscipline(id: number): Observable<Discipline> {
-    return this.http.get<Discipline>(
-      `${this.skillUrl}/${id}`,
-      readonlyHttpOptions
-    );
+    return this.http.get<Discipline>(this.url(id), readonlyHttpOptions);
   }
 
   public createDiscipline(discipline: Discipline): Observable<Discipline> {
     return this.http.post<Discipline>(
-      `${this.skillUrl}`,
+      this.url(),
       discipline,
       readonlyHttpOptions
     );
@@ -42,22 +41,19 @@ export class DisciplineService {
     discipline: Discipline
   ): Observable<Discipline> {
     return this.http.put<Discipline>(
-      `${this.skillUrl}/${id}`,
+      this.url(id),
       discipline,
       readonlyHttpOptions
     );
   }
 
   public deleteDiscipline(id: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.skillUrl}/${id}`,
-      readonlyHttpOptions
-    );
+    return this.http.delete<void>(this.url(id), readonlyHttpOptions);
   }
 
-  public getUserDisciplines(id: number): Observable<Discipline[]> {
+  public getUserDisciplines(userId: number): Observable<Discipline[]> {
     return this.http.get<Discipline[]>(
-      `${this.skillUrl}/user/${id}`,
+      `${this.disciplineUrl}/user/${userId}`,
       readonlyHttpOptions
     );
   }

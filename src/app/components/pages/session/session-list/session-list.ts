@@ -37,17 +37,21 @@ export class SessionList implements OnInit {
     });
   }
 
-  deactivateSession(id: number, session: Session): void {
-    if (!confirm(`Деактивировать сессию с ID ${session.id}?`)) return;
+  activateSession(id: number, active: boolean): void {
+    const session = this.sessions.find((s) => s.id === id);
+    if (!session) return;
 
-    const updatedSession = { ...session, active: false };
+    const action = active ? 'Активировать' : 'Деактивировать';
+    if (!confirm(`${action} сессию с ID ${id}?`)) return;
 
-    this.sessionService.updateSession(id, updatedSession).subscribe({
+    this.sessionService.activateSession(id, active).subscribe({
       next: () => {
-        session.active = false; // обновляем локально
-        console.log(`Сессия с ID ${session.id} деактивирована`);
+        session.active = active; // обновляем локально
+        console.log(
+          `Сессия с ID ${id} ${active ? 'активирована' : 'деактивирована'}`
+        );
       },
-      error: (err) => console.error('Ошибка при деактивации сессии:', err),
+      error: (err) => console.error('Ошибка при обновлении сессии:', err),
     });
   }
 }

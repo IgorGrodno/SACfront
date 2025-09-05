@@ -8,9 +8,8 @@ describe('SkillExam', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SkillExam]
-    })
-    .compileComponents();
+      imports: [SkillExam],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SkillExam);
     component = fixture.componentInstance;

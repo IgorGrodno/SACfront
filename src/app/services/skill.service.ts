@@ -17,37 +17,27 @@ export class SkillService {
 
   constructor(private readonly http: HttpClient) {}
 
-  public getSkills(): Observable<Skill[]> {
-    return this.http.get<Skill[]>(`${this.skillUrl}`, readonlyHttpOptions);
+  // ====== Skills ======
+  getSkills(): Observable<Skill[]> {
+    return this.http.get<Skill[]>(this.skillUrl, readonlyHttpOptions);
   }
 
-  public getDisciplineSkills(id: number): Observable<Skill[]> {
+  getDisciplineSkills(id: number): Observable<Skill[]> {
     return this.http.get<Skill[]>(
       `${this.skillUrl}/discipline/${id}`,
       readonlyHttpOptions
     );
   }
 
-  public getSkill(id: number): Observable<Skill> {
+  getSkill(id: number): Observable<Skill> {
     return this.http.get<Skill>(`${this.skillUrl}/${id}`, readonlyHttpOptions);
   }
 
-  public getSkillSteps(skillId: number): Observable<SkillStep[]> {
-    return this.http.get<SkillStep[]>(
-      `${this.skillUrl}/steps/${skillId}`,
-      readonlyHttpOptions
-    );
+  createSkill(skill: Omit<Skill, 'id'>): Observable<Skill> {
+    return this.http.post<Skill>(this.skillUrl, skill, readonlyHttpOptions);
   }
 
-  public createSkill(skill: Skill): Observable<Skill> {
-    return this.http.post<Skill>(
-      `${this.skillUrl}`,
-      skill,
-      readonlyHttpOptions
-    );
-  }
-
-  public updateSkill(id: number, skill: Skill): Observable<Skill> {
+  updateSkill(id: number, skill: Partial<Skill>): Observable<Skill> {
     return this.http.put<Skill>(
       `${this.skillUrl}/${id}`,
       skill,
@@ -55,9 +45,50 @@ export class SkillService {
     );
   }
 
-  public deleteSkill(id: number): Observable<void> {
-    return this.http.delete<void>(
+  deleteSkill(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
       `${this.skillUrl}/${id}`,
+      readonlyHttpOptions
+    );
+  }
+
+  // ====== Skill Steps ======
+  getSkillSteps(skillId: number): Observable<SkillStep[]> {
+    return this.http.get<SkillStep[]>(
+      `${this.skillUrl}/steps/${skillId}`,
+      readonlyHttpOptions
+    );
+  }
+
+  createSkillStep(
+    skillId: number,
+    step: Omit<SkillStep, 'id'>
+  ): Observable<SkillStep> {
+    return this.http.post<SkillStep>(
+      `${this.skillUrl}/${skillId}/steps`,
+      step,
+      readonlyHttpOptions
+    );
+  }
+
+  updateSkillStep(
+    skillId: number,
+    stepId: number,
+    step: Partial<SkillStep>
+  ): Observable<SkillStep> {
+    return this.http.put<SkillStep>(
+      `${this.skillUrl}/${skillId}/steps/${stepId}`,
+      step,
+      readonlyHttpOptions
+    );
+  }
+
+  deleteSkillStep(
+    skillId: number,
+    stepId: number
+  ): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.skillUrl}/${skillId}/steps/${stepId}`,
       readonlyHttpOptions
     );
   }

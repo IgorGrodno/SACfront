@@ -1,15 +1,58 @@
-.skill-card {
-  border: 1px solid #ddd;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  background-color: #f9f9f9;
+/* Контейнер страницы */
+.skill-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: "Inter", sans-serif;
 }
 
-.skill-card h3 {
-  margin-top: 0;
+/* Заголовок */
+.skill-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #222;
+  text-align: center;
 }
 
-.skill-card ul {
-  padding-left: 20px;
+/* Сообщение о пустом списке */
+.empty-message {
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+/* Список навыков */
+.skill-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Элемент списка */
+.skill-item {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+
+/* Эффект при наведении */
+.skill-item:hover {
+  background: #f9fafb;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Название навыка */
+.skill-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
 }

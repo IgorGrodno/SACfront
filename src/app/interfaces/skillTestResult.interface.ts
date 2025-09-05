@@ -1,10 +1,13 @@
+import { StepScoreEntry } from './stepScoreEntry.interface';
+
 export interface SkillTestResult {
+  id?: number;
   sessionId: number;
   skillId: number;
   studentId: number;
   teacherId: number;
-  stepScore: { name: string; value: number }[];
+  stepScores: StepScoreEntry[];
   lightMistakes: number;
   hardMistakes: number;
-  resultDate: Date;
+  resultDate: string;
 }

@@ -10,8 +10,6 @@ import {
 import { AuthService } from '../../../services/auth.service';
 import { ProfileService } from '../../../services/profile.service';
 import { Profile } from '../../../interfaces/profile.interface';
-import { Skill } from '../../../interfaces/skill.interface';
-import { SkillService } from '../../../services/skill.service';
 import { ActivatedRoute } from '@angular/router';
 import {
   CdkDragDrop,

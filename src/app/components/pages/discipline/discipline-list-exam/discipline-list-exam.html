@@ -1,20 +1,20 @@
-<div class="p-6">
+<div class="discipline-container">
   <!-- Заголовок -->
-  <h2 class="text-2xl font-bold mb-6">Мои дисциплины</h2>
+  <h2>Мои дисциплины</h2>
 
   <!-- Если дисциплин нет -->
-  <div *ngIf="disciplineList.length === 0" class="text-gray-500 italic">
+  <div *ngIf="disciplineList.length === 0" class="empty-message">
     Дисциплины не найдены
   </div>
 
   <!-- Сетка дисциплин -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="discipline-grid">
     <div
       *ngFor="let discipline of disciplineList"
-      class="p-4 rounded-xl shadow bg-white hover:shadow-lg hover:bg-gray-50 transition cursor-pointer"
+      class="discipline-card"
       (click)="goSkillList(discipline.id)"
     >
-      <div class="font-semibold text-lg mb-2">
+      <div class="discipline-name">
         {{ discipline.name }}
       </div>
     </div>

@@ -55,7 +55,7 @@ export class SessionCreate {
 
   private resetForm(): void {
     this.startDate = '';
-    this.active = false;
+    this.active = true;
     this.studentRangeStart = null;
     this.studentRangeEnd = null;
   }

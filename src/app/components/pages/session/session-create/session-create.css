@@ -1,11 +1,83 @@
-form {
+/* Общий контейнер */
+form,
+h2 {
+  max-width: 500px;
+  margin: 2rem auto;
+  font-family: "Inter", sans-serif;
+}
+
+h2 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1f2937;
+}
+
+/* Метки и инпуты */
+label {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 300px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 input[type="date"],
 input[type="number"] {
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  margin-top: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+input[type="date"]:focus,
+input[type="number"]:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+  outline: none;
+}
+
+/* Диапазон номеров студентов в одну строку */
+label input[type="number"] {
+  width: 100px;
+  margin-right: 0.5rem;
+}
+
+/* Чекбокс */
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Кнопка */
+button[type="submit"] {
+  display: block;
   width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+/* Общие отступы */
+br {
+  line-height: 1.5rem;
 }

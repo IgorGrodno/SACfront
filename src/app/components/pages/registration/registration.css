@@ -4,6 +4,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  justify-self: center;
+  height: 100%;
 }
 
 .registration-container {
