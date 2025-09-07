@@ -38,7 +38,6 @@ export class App {
           this.menuItems.set('SkillCreate', '/skill-create');
           this.menuItems.set('DisciplineCreate', '/discipline-create');
           this.menuItems.set('DisciplineList', '/discipline-list');
-          this.menuItems.set('DisciplineListExam', '');
           this.menuItems.set('Skill-list', '/skill-list');
         }
         if (

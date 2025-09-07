@@ -20,15 +20,16 @@
 
   <hr />
 
-  <div class="skills-wrapper" style="display: flex; gap: 20px">
-    <!-- Доступные навыки -->
+  <!-- обертка с flex, чтобы списки были рядом -->
+  <div class="skills-wrapper">
+    <!-- Доступные дисциплины -->
     <div class="skill-list" [style.height.px]="availableSkillsListHeight">
       <h3>Все дисциплины</h3>
       <div
         cdkDropList
-        id="availableList"
+        #availableList="cdkDropList"
         [cdkDropListData]="availableDisciplines"
-        [cdkDropListConnectedTo]="['userList']"
+        [cdkDropListConnectedTo]="[userList]"
         class="drop-list"
         (cdkDropListDropped)="drop($event)"
       >
@@ -43,14 +44,14 @@
       </div>
     </div>
 
-    <!-- Навыки пользователя -->
+    <!-- Дисциплины пользователя -->
     <div class="skill-list" [style.height.px]="userSkillsListHeight">
       <h3>Дисциплины пользователя</h3>
       <div
         cdkDropList
-        id="userList"
+        #userList="cdkDropList"
         [cdkDropListData]="userDisciplines"
-        [cdkDropListConnectedTo]="['availableList']"
+        [cdkDropListConnectedTo]="[availableList]"
         class="drop-list"
         (cdkDropListDropped)="drop($event)"
       >
@@ -65,5 +66,6 @@
       </div>
     </div>
   </div>
+
+  <button (click)="saveProfile()">Сохранить профиль</button>
 </div>
-<button (click)="saveProfile()">Сохранить профиль</button>

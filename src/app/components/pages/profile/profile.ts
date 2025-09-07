@@ -5,7 +5,10 @@ import {
   Input,
   NgZone,
   QueryList,
+  ViewChild,
   ViewChildren,
+  AfterViewInit,
+  OnInit,
 } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileService } from '../../../services/profile.service';
@@ -13,6 +16,7 @@ import { Profile } from '../../../interfaces/profile.interface';
 import { ActivatedRoute } from '@angular/router';
 import {
   CdkDragDrop,
+  CdkDropList,
   DragDropModule,
   moveItemInArray,
   transferArrayItem,
@@ -28,9 +32,9 @@ import { Discipline } from '../../../interfaces/discipline.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './profile.html',
-  styleUrl: './profile.css',
+  styleUrls: ['./profile.css'], // ✅ styleUrls (plural!) – Angular требует массив
 })
-export class ProfilePage {
+export class ProfilePage implements OnInit, AfterViewInit {
   @Input() userId!: number;
   userProfile?: Profile;
   isAdmin: boolean = false;
@@ -47,8 +51,10 @@ export class ProfilePage {
 
   @ViewChildren('availableSkillRef')
   availableSkillElements!: QueryList<ElementRef>;
-  @ViewChildren('userSkillRef')
-  userSkillElements!: QueryList<ElementRef>;
+  @ViewChildren('userSkillRef') userSkillElements!: QueryList<ElementRef>;
+
+  @ViewChild('availableList') availableList!: CdkDropList;
+  @ViewChild('userList') userList!: CdkDropList;
 
   constructor(
     private authService: AuthService,
@@ -86,15 +92,24 @@ export class ProfilePage {
           (discipline) => !userDisciplines.some((s) => s.id === discipline.id)
         );
       });
-    const currentUser = this.authService.getCurrentUser();
   }
 
   ngAfterViewInit(): void {
-    this.availableSkillElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    this.userSkillElements.changes.subscribe(() => this.triggerHeightUpdate());
-    this.triggerHeightUpdate();
+    // ✅ откладываем связывание на следующий tick, чтобы оба списка точно были созданы
+    setTimeout(() => {
+      if (this.availableList && this.userList) {
+        this.availableList.connectedTo = [this.userList];
+        this.userList.connectedTo = [this.availableList];
+      }
+
+      this.availableSkillElements.changes.subscribe(() =>
+        this.triggerHeightUpdate()
+      );
+      this.userSkillElements.changes.subscribe(() =>
+        this.triggerHeightUpdate()
+      );
+      this.triggerHeightUpdate();
+    });
   }
 
   private triggerHeightUpdate(): void {

@@ -6,7 +6,6 @@
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   font-family: "Inter", sans-serif;
-  align-self: center;
 }
 
 h2 {
@@ -75,6 +74,13 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 50px; /* ✅ добавили минимальную высоту */
+  border: 2px dashed transparent; /* для визуальной подсказки */
+}
+
+.drop-list.cdk-drop-list-dragging {
+  border-color: #007bff; /* подсветка при перетаскивании */
+  background: #f1f7ff;
 }
 
 .skill-item {
@@ -94,6 +100,18 @@ h2 {
 .skill-item:hover {
   background: #f1f7ff;
   border-color: #007bff;
+}
+
+/* ✅ Стили для перетаскивания */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
 }
 
 button {
