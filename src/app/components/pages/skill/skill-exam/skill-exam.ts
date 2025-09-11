@@ -8,6 +8,7 @@ import { Session } from '../../../../interfaces/session.interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExamService } from '../../../../services/exam.service';
+import { Skill } from '../../../../interfaces/skill.interface';
 
 @Component({
   selector: 'app-skill-exam',
@@ -19,16 +20,15 @@ export class SkillExam {
   skillSteps: SkillStep[] = [];
   studentIds: number[] = [];
   activeSessionList: Session[] = [];
+  score: number = 0;
 
   currentSessionId: number | undefined;
   currentTeacherId: number | undefined;
   currentStudentId: number | undefined;
 
-  skillId!: number | undefined;
+  skill: Skill | undefined;
 
   stepScores: number[] = [];
-  grossErrors: number = 0;
-  minorErrors: number = 0;
   Math: any;
 
   constructor(
@@ -41,13 +41,23 @@ export class SkillExam {
 
   ngOnInit(): void {
     const skillIdParam = this.route.snapshot.paramMap.get('id');
-    this.skillId = skillIdParam !== null ? Number(skillIdParam) : undefined;
+    const skillId = skillIdParam !== null ? Number(skillIdParam) : undefined;
 
-    if (typeof this.skillId === 'number' && !isNaN(this.skillId)) {
-      this.skillService.getSkillSteps(this.skillId).subscribe({
+    if (typeof skillId === 'number' && !isNaN(skillId)) {
+      this.skillService.getSkillSteps(skillId).subscribe({
         next: (steps) => {
           this.skillSteps = steps;
+          console.log(this.skillSteps);
           this.stepScores = new Array(steps.length).fill(0);
+          this.skillService.getSkill(skillId).subscribe({
+            next: (skill) => {
+              this.skill = skill;
+              console.log('Навык загружен:', this.skill);
+            },
+            error: (err) => {
+              console.error('Ошибка загрузки навыка:', err);
+            },
+          });
 
           this.sessionService.getActiveSessions().subscribe({
             next: (session) => {
@@ -86,12 +96,15 @@ export class SkillExam {
     return (
       typeof this.currentSessionId === 'number' &&
       typeof this.currentStudentId === 'number' &&
-      this.stepScores.length === this.skillSteps.length &&
-      this.grossErrors >= 0 &&
-      this.grossErrors <= 100 &&
-      this.minorErrors >= 0 &&
-      this.minorErrors <= 100
+      this.stepScores.length === this.skillSteps.length
     );
+  }
+
+  private setStepScores() {
+    return this.skillSteps.map((step, index) => ({
+      stepId: step.id,
+      score: this.stepScores[index],
+    }));
   }
 
   submitExam(): void {
@@ -104,13 +117,8 @@ export class SkillExam {
         sessionId: this.currentSessionId as number,
         studentId: this.currentStudentId as number,
         teacherId: this.currentTeacherId as number,
-        skillId: this.skillId as number,
-        stepScores: this.skillSteps.map((step, index) => ({
-          stepId: step.id,
-          score: this.stepScores[index],
-        })),
-        lightMistakes: this.minorErrors,
-        hardMistakes: this.grossErrors,
+        skillId: this.skill?.id as number,
+        stepScores: this.setStepScores(),
         resultDate: new Date().toISOString(),
       };
 
@@ -137,6 +145,7 @@ export class SkillExam {
 
   setStep(i: number, val: number): void {
     this.stepScores[i] = this.clamp(val, 0, 2);
+    this.score = this.calculateScore(); // пересчёт после изменения
   }
 
   incStep(i: number): void {
@@ -151,34 +160,12 @@ export class SkillExam {
     this.setStep(i, Number(val));
   }
 
-  onGrossChange(val: any): void {
-    this.grossErrors = this.clamp(Number(val), 0, 100);
-  }
-
-  onMinorChange(val: any): void {
-    this.minorErrors = this.clamp(Number(val), 0, 100);
-  }
-
-  incGross(): void {
-    this.onGrossChange(this.grossErrors + 1);
-  }
-  decGross(): void {
-    this.onGrossChange(this.grossErrors - 1);
-  }
-  incMinor(): void {
-    this.onMinorChange(this.minorErrors + 1);
-  }
-  decMinor(): void {
-    this.onMinorChange(this.minorErrors - 1);
-  }
-
   private resetForm(): void {
     this.stepScores = new Array(this.skillSteps.length).fill(0);
-    this.grossErrors = 0;
-    this.minorErrors = 0;
     this.currentStudentId = undefined;
     this.filteredStudents = [...this.studentIds];
     this.studentSearch = '';
+    this.score = 0;
   }
 
   onStepKeyPress(event: KeyboardEvent): void {
@@ -247,5 +234,20 @@ export class SkillExam {
     } else {
       this.currentStudentId = undefined;
     }
+  }
+
+  private calculateScore(): number {
+    const stepMap = new Map(this.skillSteps.map((s) => [s.id, s]));
+    let total = 0;
+
+    this.stepScores.forEach((score, i) => {
+      const step = stepMap.get(this.skillSteps[i].id);
+      console.log('Шаг:', step, 'Баллы:', score);
+      total += score;
+      if (score === 0 && step?.mistakePossible) {
+        total -= 1;
+      }
+    });
+    return Math.max(total, 0);
   }
 }

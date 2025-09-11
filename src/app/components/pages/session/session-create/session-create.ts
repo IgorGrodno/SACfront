@@ -12,6 +12,7 @@ import { SessionService } from '../../../../services/session.service';
   imports: [CommonModule, FormsModule],
 })
 export class SessionCreate {
+  sessionName: string = '';
   startDate: string = '';
   active: boolean = false;
   studentRangeStart: number | null = null;
@@ -32,6 +33,7 @@ export class SessionCreate {
       }
 
       const newSession: Session = {
+        name: this.sessionName,
         startDate: this.startDate,
         endDate: undefined,
         active: this.active,

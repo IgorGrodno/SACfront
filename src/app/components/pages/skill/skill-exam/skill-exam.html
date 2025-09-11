@@ -1,5 +1,5 @@
 <div class="exam-container">
-  <h2>Экзамен по навыку</h2>
+  <h2>{{ skill?.name }}</h2>
 
   <!-- Выбор активной сессии -->
   <div class="form-group">
@@ -77,64 +77,7 @@
       </div>
     </div>
   </div>
-
-  <!-- Ошибки -->
-  <div class="errors-section">
-    <div class="error-item">
-      <label>Грубые ошибки:</label>
-      <div class="number-input">
-        <button
-          type="button"
-          (click)="decGross()"
-          [disabled]="grossErrors <= 0"
-        >
-          −
-        </button>
-        <input
-          type="number"
-          [ngModel]="grossErrors"
-          (ngModelChange)="onGrossChange($event)"
-          min="0"
-          max="100"
-        />
-        <button
-          type="button"
-          (click)="incGross()"
-          [disabled]="grossErrors >= 100"
-        >
-          +
-        </button>
-      </div>
-    </div>
-
-    <div class="error-item">
-      <label>Мелкие ошибки:</label>
-      <div class="number-input">
-        <button
-          type="button"
-          (click)="decMinor()"
-          [disabled]="minorErrors <= 0"
-        >
-          −
-        </button>
-        <input
-          type="number"
-          [ngModel]="minorErrors"
-          (ngModelChange)="onMinorChange($event)"
-          min="0"
-          max="100"
-        />
-        <button
-          type="button"
-          (click)="incMinor()"
-          [disabled]="minorErrors >= 100"
-        >
-          +
-        </button>
-      </div>
-    </div>
-  </div>
-
+  <span>{{ score }}</span>
   <!-- Кнопка отправки -->
   <button (click)="submitExam()" [disabled]="!canSubmit()" class="btn-submit">
     Отправить

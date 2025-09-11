@@ -61,11 +61,11 @@ export class ProfilePage implements OnInit, AfterViewInit {
     private profileService: ProfileService,
     private disciplineService: DisciplineService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    this.isAdmin = this.authService.hasRole('ROLE_ADMIN');
     this.route.params
       .pipe(
         switchMap((params) => {

@@ -98,4 +98,9 @@ export class AuthService {
   isLoggedIn(): boolean {
     return this.loggedInSubject.value;
   }
+
+  hasRole(role: string): boolean {
+    const user = this.getCurrentUser();
+    return user?.roles.includes(role) ?? false;
+  }
 }

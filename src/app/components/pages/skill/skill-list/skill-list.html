@@ -16,6 +16,15 @@
     >
       <div class="skill-name">
         {{ skill.name }}
+        <button
+          *ngIf="skill.canDelete || isAdmin"
+          type="button"
+          class="remove-btn"
+          aria-label="Удалить навык"
+          (click)="$event.stopPropagation(); removeSkill(skill.id)"
+        >
+          ✖
+        </button>
       </div>
     </li>
   </ul>

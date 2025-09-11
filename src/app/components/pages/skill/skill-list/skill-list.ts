@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { SkillService } from '../../../../services/skill.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DisciplineService } from '../../../../services/discipline.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-skill-list',
@@ -14,15 +15,17 @@ import { DisciplineService } from '../../../../services/discipline.service';
 export class SkillList implements OnInit {
   skills: Skill[] = [];
   disciplineId?: string;
+  isAdmin = false;
 
   constructor(
     private skillService: SkillService,
-    private disciplineService: DisciplineService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.hasRole('ROLE_ADMIN');
     this.disciplineId = this.route.snapshot.paramMap.get('id') ?? undefined;
 
     if (this.disciplineId) {
@@ -34,11 +37,20 @@ export class SkillList implements OnInit {
     } else {
       this.skillService.getSkills().subscribe((skills) => {
         this.skills = skills;
+        console.log(this.skills);
       });
     }
   }
 
   goSkillExam(id: number) {
     this.router.navigate(['/skill-exam', id]);
+  }
+
+  removeSkill(id: number) {
+    this.skillService.deleteSkill(id).subscribe({
+      next: () => {
+        this.skills = this.skills.filter((s) => s.id !== id);
+      },
+    });
   }
 }

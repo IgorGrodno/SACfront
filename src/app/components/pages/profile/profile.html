@@ -19,9 +19,8 @@
   </form>
 
   <hr />
-
   <!-- обертка с flex, чтобы списки были рядом -->
-  <div class="skills-wrapper">
+  <div class="skills-wrapper" *ngIf="isAdmin">
     <!-- Доступные дисциплины -->
     <div class="skill-list" [style.height.px]="availableSkillsListHeight">
       <h3>Все дисциплины</h3>

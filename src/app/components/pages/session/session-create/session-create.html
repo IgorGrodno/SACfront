@@ -2,6 +2,11 @@
 
 <form (ngSubmit)="createSession()">
   <label>
+    Название сессии:
+    <input [(ngModel)]="sessionName" name="sessionName" required />
+  </label>
+  <br />
+  <label>
     Дата начала:
     <input type="date" [(ngModel)]="startDate" name="startDate" required />
   </label>

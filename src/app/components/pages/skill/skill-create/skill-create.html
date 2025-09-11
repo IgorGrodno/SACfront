@@ -1,12 +1,15 @@
 <div class="skill-form">
   <h2>Добавить Навык</h2>
+
   <label>
     Название навыка:
     <input [(ngModel)]="newskillName" placeholder="Введите название навыка" />
   </label>
+
   <button class="add-skill-button" (click)="saveSkill()">Добавить навык</button>
 
   <div class="lists-container">
+    <!-- Шаги навыка -->
     <div class="step-list">
       <h3>Шаги навыка</h3>
       <div
@@ -25,17 +28,27 @@
           *ngFor="let step of skillSteps"
           cdkDrag
         >
-          {{ step.name }}
+          <span [ngClass]="{ 'mistake-step': step.mistakePossible }">
+            {{ step.name }}
+          </span>
         </div>
       </div>
     </div>
+
+    <!-- Доступные шаги -->
     <div class="step-list">
-      <h3>Доступные шаги</h3>
       <label>
         Название шага:
         <input [(ngModel)]="newStepName" placeholder="Введите название шага" />
-        <button (click)="addStep()">Добавить шаг</button>
       </label>
+
+      <label>
+        Минус балл при невыполнении:
+        <input type="checkbox" [(ngModel)]="newStepPenalty" />
+      </label>
+
+      <button (click)="addStep()">Добавить шаг</button>
+      <h3>Доступные шаги</h3>
       <div
         #availableListContainer
         cdkDropList
@@ -52,7 +65,12 @@
           *ngFor="let step of availableSteps"
           cdkDrag
         >
-          <span class="step-name">{{ step.name }}</span>
+          <span
+            class="step-name"
+            [ngClass]="{ 'mistake-step': step.mistakePossible }"
+          >
+            {{ step.name }}
+          </span>
           <button
             *ngIf="step.canDelete"
             type="button"

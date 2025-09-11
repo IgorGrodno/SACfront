@@ -66,18 +66,9 @@ export class DisciplineCreate implements OnDestroy {
         },
         error: (err) => console.error('Ошибка загрузки навыков:', err),
       });
+  }
 
-    this.disciplineService
-      .getDisciplines()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.availableDisciplines = data;
-          this.triggerHeightUpdate();
-        },
-        error: (err) => console.error('Ошибка загрузки дисциплин:', err),
-      });
-
+  ngAfterViewInit(): void {
     this.availableSkillElements?.changes
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.triggerHeightUpdate());
@@ -85,6 +76,7 @@ export class DisciplineCreate implements OnDestroy {
     this.disciplineSkillElements?.changes
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.triggerHeightUpdate());
+    this.triggerHeightUpdate();
   }
 
   ngOnDestroy(): void {
@@ -116,10 +108,11 @@ export class DisciplineCreate implements OnDestroy {
     }
 
     const newDiscipline: Discipline = {
-      id: 0, // пусть бэк выставит id
+      id: -1, // пусть бэк выставит id
       name: this.newDisciplineName.trim(),
       skills: this.disciplineSkills,
     };
+    console.log(newDiscipline);
 
     this.disciplineService
       .createDiscipline(newDiscipline)
@@ -129,17 +122,16 @@ export class DisciplineCreate implements OnDestroy {
           console.log('Дисциплина добавлена');
           this.newDisciplineName = '';
           this.disciplineSkills = [];
-
-          // обновляем локально без повторных запросов
-          this.availableDisciplines.push(created);
-
-          // удаляем выбранные навыки из доступных
-          const usedIds = new Set(
-            (newDiscipline.skills ?? []).map((s) => s.id)
-          );
-          this.availableSkillsForDiscipline =
-            this.availableSkillsForDiscipline.filter((s) => !usedIds.has(s.id));
-
+          this.skillService
+            .getSkills()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (data) => {
+                this.availableSkillsForDiscipline = data;
+                this.triggerHeightUpdate();
+              },
+              error: (err) => console.error('Ошибка загрузки навыков:', err),
+            });
           this.triggerHeightUpdate();
         },
         error: (err) => console.error('Ошибка при добавлении дисциплины:', err),

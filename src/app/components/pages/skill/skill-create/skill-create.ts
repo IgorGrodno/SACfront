@@ -22,7 +22,6 @@ import { SkillStep } from '../../../../interfaces/skillStep.interface';
 import { SkillService } from '../../../../services/skill.service';
 import { StepService } from '../../../../services/step.service';
 import { DisciplineService } from '../../../../services/discipline.service';
-import { Discipline } from '../../../../interfaces/discipline.interface';
 
 @Component({
   selector: 'app-skill-create',
@@ -34,6 +33,7 @@ import { Discipline } from '../../../../interfaces/discipline.interface';
 export class SkillCreate implements OnInit, AfterViewInit {
   newskillName = '';
   newStepName = '';
+  newStepPenalty = false;
 
   availableSkills: Skill[] = [];
   skills: Skill[] = [];
@@ -53,9 +53,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
   constructor(
     private skillService: SkillService,
     private stepService: StepService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,
-    private disciplineService: DisciplineService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +61,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
       next: (data) => {
         this.availableSteps = data;
         this.triggerHeightUpdate();
+        console.log('Доступные шаги загружены:', this.availableSteps);
       },
       error: (err) => console.error('Ошибка загрузки шагов:', err),
     });
@@ -79,10 +78,15 @@ export class SkillCreate implements OnInit, AfterViewInit {
 
   private triggerHeightUpdate(): void {
     setTimeout(() => {
-      this.availableListHeight = this.calculateTotalHeight(
+      const availableHeight = this.calculateTotalHeight(
         this.availableStepElements
       );
-      this.skillListHeight = this.calculateTotalHeight(this.skillStepElements);
+      const skillHeight = this.calculateTotalHeight(this.skillStepElements);
+
+      const maxHeight = Math.max(availableHeight, skillHeight);
+
+      this.availableListHeight = maxHeight;
+      this.skillListHeight = maxHeight;
 
       this.cdr.detectChanges();
     });
@@ -93,7 +97,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
     elements.forEach((el) => {
       total += el.nativeElement.offsetHeight || 0;
     });
-    return total;
+    return total + 40;
   }
 
   // ---------------- STEPS ----------------
@@ -105,6 +109,7 @@ export class SkillCreate implements OnInit, AfterViewInit {
       id: -1,
       name: this.newStepName.trim(),
       canDelete: true,
+      mistakePossible: this.newStepPenalty,
     };
 
     this.stepService.addStep(step).subscribe({

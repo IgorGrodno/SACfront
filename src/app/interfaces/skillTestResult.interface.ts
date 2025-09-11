@@ -7,7 +7,5 @@ export interface SkillTestResult {
   studentId: number;
   teacherId: number;
   stepScores: StepScoreEntry[];
-  lightMistakes: number;
-  hardMistakes: number;
   resultDate: string;
 }

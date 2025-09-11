@@ -14,7 +14,7 @@
   </thead>
   <tbody>
     <tr *ngFor="let session of sessions">
-      <td>{{ session.id }}</td>
+      <td>{{ session.name }}</td>
       <td>{{ session.startDate | date : "yyyy-MM-dd" }}</td>
       <td>
         {{ session.endDate ? (session.endDate | date : "yyyy-MM-dd") : "—" }}

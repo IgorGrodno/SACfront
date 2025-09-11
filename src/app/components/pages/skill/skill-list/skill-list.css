@@ -56,3 +56,7 @@
   font-weight: 600;
   color: #1f2937;
 }
+.remove-btn {
+  width: max-content;
+  height: max-content;
+}

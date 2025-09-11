@@ -44,6 +44,9 @@ input {
   border-radius: 8px;
   padding: 10px;
   background-color: #fafafa;
+  min-height: 200px;
+  max-height: 800px; /* ограничение, чтобы не раздувалось бесконечно */
+  overflow-y: auto; /* скролл */
 }
 
 .step-item {
@@ -82,4 +85,8 @@ input {
 .remove-btn {
   width: max-content;
   height: max-content;
+}
+
+.mistake-step {
+  color: red;
 }
