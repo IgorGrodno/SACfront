@@ -239,7 +239,10 @@ export class SkillExam {
   private calculateScore(): number {
     const stepMap = new Map(this.skillSteps.map((s) => [s.id, s]));
     let total = 0;
-
+    let maxPossible = 0;
+    this.skillSteps.forEach((step) => {
+      maxPossible += 2;
+    });
     this.stepScores.forEach((score, i) => {
       const step = stepMap.get(this.skillSteps[i].id);
       console.log('Шаг:', step, 'Баллы:', score);
@@ -248,6 +251,6 @@ export class SkillExam {
         total -= 1;
       }
     });
-    return Math.max(total, 0);
+    return Math.round((Math.max(total, 0) / maxPossible) * 100);
   }
 }
