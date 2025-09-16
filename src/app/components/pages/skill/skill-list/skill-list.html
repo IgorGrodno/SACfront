@@ -12,12 +12,12 @@
     <li
       *ngFor="let skill of skills"
       class="skill-item"
-      (click)="goSkillExam(skill.id)"
+      (click)="goSkillEdit(skill.id)"
     >
       <div class="skill-name">
         {{ skill.name }}
         <button
-          *ngIf="skill.canDelete || isAdmin"
+          *ngIf="skill.canDelete && isAdmin"
           type="button"
           class="remove-btn"
           aria-label="Удалить навык"

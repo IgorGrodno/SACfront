@@ -191,7 +191,6 @@ export class SkillExam {
     if (value === '0' || value === '1' || value === '2') {
       this.setStep(index, Number(value));
     } else {
-      // если ввели что-то невалидное — сброс на 0
       this.setStep(index, 0);
       event.target.value = '0';
     }

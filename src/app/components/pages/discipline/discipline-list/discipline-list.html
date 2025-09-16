@@ -1,26 +1,29 @@
 <div class="discipline-list">
   <h2>Список дисциплин</h2>
 
-  <div *ngIf="loading">Загрузка...</div>
+  <div *ngIf="loading" class="info">Загрузка...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
   <ul *ngIf="!loading && !error && disciplines.length > 0">
-    <li *ngFor="let discipline of disciplines">
-      <strong>{{ discipline.name }}</strong>
-      <span *ngIf="discipline.skills?.length">
-        ({{ discipline.skills?.length }} навыков)
-      </span>
+    <li *ngFor="let discipline of disciplines" class="discipline-item">
+      <div class="discipline-info">
+        <strong>{{ discipline.name }}</strong>
+        <span *ngIf="discipline.skills?.length">
+          ({{ discipline.skills?.length }} навыков)
+        </span>
+      </div>
       <button
         class="remove-btn"
         type="button"
         (click)="removeDiscipline(discipline.id)"
+        title="Удалить дисциплину"
       >
         ✖
       </button>
     </li>
   </ul>
 
-  <div *ngIf="!loading && !error && disciplines.length === 0">
+  <div *ngIf="!loading && !error && disciplines.length === 0" class="info">
     Дисциплин пока нет
   </div>
 </div>

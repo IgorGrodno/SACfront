@@ -5,7 +5,7 @@
   <div class="form-group">
     <label for="session">Сессия:</label>
     <ng-container *ngIf="activeSessionList.length === 1; else multipleSessions">
-      <p class="single-session">Сессия №{{ activeSessionList[0].id }}</p>
+      <p class="single-session">{{ activeSessionList[0].name }}</p>
     </ng-container>
 
     <ng-template #multipleSessions>
@@ -20,7 +20,7 @@
           *ngFor="let session of activeSessionList"
           [ngValue]="session.id"
         >
-          Сессия №{{ session.id }}
+          Сессия: {{ session.id }}
         </option>
       </select>
     </ng-template>

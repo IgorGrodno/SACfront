@@ -42,8 +42,12 @@ export class SkillList implements OnInit {
     }
   }
 
-  goSkillExam(id: number) {
-    this.router.navigate(['/skill-exam', id]);
+  goSkillEdit(id: number) {
+    if (this.disciplineId) {
+      this.router.navigate(['/skill-exam', id]);
+    } else {
+      this.router.navigate(['/skill-edit', id]);
+    }
   }
 
   removeSkill(id: number) {
