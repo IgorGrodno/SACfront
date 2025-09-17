@@ -225,21 +225,18 @@ export class TestResult implements OnInit {
   }
 
   async exportToExcel(): Promise<void> {
-    // 1. Создаём книгу и лист
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Результаты');
 
-    // 2. Определяем колонки (ключи помогут при добавлении строк)
     worksheet.columns = [
-      { header: 'Сессия', key: 'session', width: 20 },
-      { header: 'Навык', key: 'skill', width: 20 },
-      { header: 'Студент', key: 'student', width: 12 },
-      { header: 'Преподаватель', key: 'teacher', width: 24 },
-      { header: 'Результат', key: 'result', width: 12 },
-      { header: 'Дата', key: 'date', width: 14 },
+      { header: 'Сессия', key: 'session' },
+      { header: 'Навык', key: 'skill' },
+      { header: 'Студент', key: 'student' },
+      { header: 'Преподаватель', key: 'teacher' },
+      { header: 'Результат', key: 'result' },
+      { header: 'Дата', key: 'date' },
     ];
 
-    // 3. Добавляем строки из this.results
     this.results.forEach((r) => {
       worksheet.addRow({
         session: r.sessionName,
@@ -252,7 +249,7 @@ export class TestResult implements OnInit {
       });
     });
 
-    // 4. Стиль заголовка: жирный + заливка + центрирование
+    // Заголовок
     const headerRow = worksheet.getRow(1);
     headerRow.font = { bold: true };
     headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -260,7 +257,7 @@ export class TestResult implements OnInit {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFF3F3F3' }, // светло-серый
+        fgColor: { argb: 'FFF3F3F3' },
       };
       cell.border = {
         top: { style: 'thin' },
@@ -270,29 +267,62 @@ export class TestResult implements OnInit {
       };
     });
 
-    // 5. Формат для колонки с датой (dd.MM.yyyy)
-    const dateCol = worksheet.getColumn('date');
-    dateCol.numFmt = 'dd.mm.yyyy';
+    // Формат колонки с датой
+    worksheet.getColumn('date').numFmt = 'dd.mm.yyyy';
 
-    // 6. Автоширина колонок: рассчитываем по данным
+    // Выравнивание для отдельных колонок
+    worksheet.getColumn('result').alignment = { horizontal: 'center' };
+    worksheet.getColumn('student').alignment = { horizontal: 'center' };
+
+    // ✅ Перенос текста в колонках "Преподаватель" и "Навык"
+    worksheet.getColumn('teacher').alignment = {
+      wrapText: true,
+      vertical: 'middle',
+    };
+    worksheet.getColumn('skill').alignment = {
+      wrapText: true,
+      vertical: 'middle',
+    };
+
+    // Универсальное выравнивание по центру по вертикали
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.alignment = { ...cell.alignment, vertical: 'middle' };
+      });
+    });
+
+    // Автоширина
     worksheet.columns.forEach((column) => {
       let maxLength = 10;
       if (typeof column.eachCell === 'function') {
-        column.eachCell({ includeEmpty: false }, (cell) => {
-          const val = cell.value;
-          const text =
-            val && typeof val === 'object' && (val as any).text
-              ? (val as any).text
-              : String(val ?? '');
-          if (text.length > maxLength) {
-            maxLength = text.length;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          let text = '';
+          if (cell.value === null || cell.value === undefined) {
+            text = '';
+          } else if (cell.type === ExcelJS.ValueType.Date) {
+            text = (cell.value as Date).toLocaleDateString('ru-RU');
+          } else if (
+            typeof cell.value === 'object' &&
+            'text' in (cell.value as any)
+          ) {
+            text = (cell.value as any).text;
+          } else {
+            text = String(cell.value);
           }
+          if (text.length > maxLength) maxLength = text.length;
         });
       }
       column.width = maxLength + 2;
     });
 
-    // 7. Генерируем файл и сохраняем
+    // ✅ Минимальная высота строк (на 2 строки текста)
+    worksheet.eachRow((row) => {
+      if (!row.height || row.height < 30) {
+        row.height = 30;
+      }
+    });
+
+    // Сохранение
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
