@@ -1,29 +1,22 @@
-<div class="discipline-list">
-  <h2>Список дисциплин</h2>
+<div class="discipline-container">
+  <!-- Заголовок -->
+  <h2>Мои дисциплины</h2>
 
-  <div *ngIf="loading" class="info">Загрузка...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <!-- Если дисциплин нет -->
+  <div *ngIf="disciplines.length === 0" class="empty-message">
+    Дисциплины не найдены
+  </div>
 
-  <ul *ngIf="!loading && !error && disciplines.length > 0">
-    <li *ngFor="let discipline of disciplines" class="discipline-item">
-      <div class="discipline-info">
-        <strong>{{ discipline.name }}</strong>
-        <span *ngIf="discipline.skills?.length">
-          ({{ discipline.skills?.length }} навыков)
-        </span>
+  <!-- Сетка дисциплин -->
+  <div class="discipline-grid">
+    <div
+      *ngFor="let discipline of disciplines"
+      class="discipline-card"
+      (click)="goDisciplineEdit(discipline.id)"
+    >
+      <div class="discipline-name">
+        {{ discipline.name }}
       </div>
-      <button
-        class="remove-btn"
-        type="button"
-        (click)="removeDiscipline(discipline.id)"
-        title="Удалить дисциплину"
-      >
-        ✖
-      </button>
-    </li>
-  </ul>
-
-  <div *ngIf="!loading && !error && disciplines.length === 0" class="info">
-    Дисциплин пока нет
+    </div>
   </div>
 </div>

@@ -23,7 +23,9 @@
         <input type="checkbox" [checked]="session.active" disabled />
       </td>
       <td>{{ session.studentNumbers.length }}</td>
-      <td>{{ session.studentNumbers.join(", ") }}</td>
+      <td>
+        {{ session.studentNumbers.join(", ") }}
+      </td>
       <td>
         <button
           *ngIf="!session.active"
@@ -39,6 +41,9 @@
           (click)="activateSession(session.id!, false)"
         >
           Деактивировать
+        </button>
+        <button class="view-details" (click)="viewSessionDetails(session.id!)">
+          Подробнее
         </button>
       </td>
     </tr>

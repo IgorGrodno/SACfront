@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SkillService } from '../../../../services/skill.service';
 import { SkillStep } from '../../../../interfaces/skillStep.interface';
 import { ActivatedRoute } from '@angular/router';
@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExamService } from '../../../../services/exam.service';
 import { Skill } from '../../../../interfaces/skill.interface';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-skill-exam',
@@ -16,20 +17,23 @@ import { Skill } from '../../../../interfaces/skill.interface';
   templateUrl: './skill-exam.html',
   styleUrls: ['./skill-exam.css'],
 })
-export class SkillExam {
+export class SkillExam implements OnInit, OnDestroy {
   skillSteps: SkillStep[] = [];
-  studentIds: number[] = [];
-  activeSessionList: Session[] = [];
-  score: number = 0;
-
-  currentSessionId: number | undefined;
-  currentTeacherId: number | undefined;
-  currentStudentId: number | undefined;
-
-  skill: Skill | undefined;
-
   stepScores: number[] = [];
-  Math: any;
+
+  studentIds: number[] = [];
+  filteredStudents: number[] = [];
+  activeSessionList: Session[] = [];
+
+  currentSessionId?: number;
+  currentTeacherId?: number;
+  currentStudentId?: number;
+
+  skill?: Skill;
+  score = 0;
+  studentSearch = '';
+
+  private subs: Subscription[] = [];
 
   constructor(
     private skillService: SkillService,
@@ -40,67 +44,106 @@ export class SkillExam {
   ) {}
 
   ngOnInit(): void {
+    const skillId = this.getSkillIdFromRoute();
+    if (!skillId) return;
+
+    this.loadSkillSteps(skillId);
+    this.loadSkill(skillId);
+    this.loadActiveSessions();
+    this.subs.push(
+      this.authService.currentUser$.subscribe(
+        (user) => (this.currentTeacherId = user?.id)
+      )
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach((s) => s.unsubscribe());
+  }
+
+  private getSkillIdFromRoute(): number | undefined {
     const skillIdParam = this.route.snapshot.paramMap.get('id');
-    const skillId = skillIdParam !== null ? Number(skillIdParam) : undefined;
+    const skillId = skillIdParam ? Number(skillIdParam) : undefined;
+    return !isNaN(skillId!) ? skillId : undefined;
+  }
 
-    if (typeof skillId === 'number' && !isNaN(skillId)) {
-      this.skillService.getSkillSteps(skillId).subscribe({
-        next: (steps) => {
-          this.skillSteps = steps;
-          console.log(this.skillSteps);
-          this.stepScores = new Array(steps.length).fill(0);
-          this.skillService.getSkill(skillId).subscribe({
-            next: (skill) => {
-              this.skill = skill;
-              console.log('Навык загружен:', this.skill);
-            },
-            error: (err) => {
-              console.error('Ошибка загрузки навыка:', err);
-            },
-          });
+  private loadSkillSteps(skillId: number): void {
+    const s = this.skillService.getSkillSteps(skillId).subscribe({
+      next: (steps) => {
+        this.skillSteps = steps;
+        this.stepScores = Array(steps.length).fill(0);
+      },
+      error: (err) => console.error('Ошибка загрузки шагов навыка:', err),
+    });
+    this.subs.push(s);
+  }
 
-          this.sessionService.getActiveSessions().subscribe({
-            next: (session) => {
-              this.activeSessionList = session;
-              if (this.activeSessionList.length === 1) {
-                this.currentSessionId = this.activeSessionList[0].id;
-                this.loadStudents();
-              }
+  private loadSkill(skillId: number): void {
+    const s = this.skillService.getSkill(skillId).subscribe({
+      next: (skill) => (this.skill = skill),
+      error: (err) => console.error('Ошибка загрузки навыка:', err),
+    });
+    this.subs.push(s);
+  }
 
-              this.authService.currentUser$.subscribe((user) => {
-                this.currentTeacherId = user ? user.id : undefined;
-              });
-            },
-            error: (err) => {
-              console.error('Ошибка загрузки активной сессии:', err);
-            },
-          });
-        },
-        error: (err) => {
-          console.error('Ошибка загрузки шагов навыка:', err);
-        },
-      });
-    }
+  private loadActiveSessions(): void {
+    const s = this.sessionService.getActiveSessions().subscribe({
+      next: (sessions) => {
+        this.activeSessionList = sessions;
+        if (sessions.length === 1) {
+          this.currentSessionId = sessions[0].id;
+          this.loadStudents();
+        }
+      },
+      error: (err) => console.error('Ошибка загрузки активных сессий:', err),
+    });
+    this.subs.push(s);
   }
 
   onSessionChange(): void {
-    if (typeof this.currentSessionId === 'number') {
+    if (this.currentSessionId !== undefined) {
       this.loadStudents();
-      this.currentStudentId = undefined; // сбросим выбранного студента
     } else {
       this.studentIds = [];
+      this.filteredStudents = [];
     }
+    this.currentStudentId = undefined;
+  }
+
+  private loadStudents(): void {
+    if (!this.currentSessionId) return;
+
+    const s = this.sessionService
+      .getSessionById(this.currentSessionId)
+      .subscribe({
+        next: (session) => {
+          this.studentIds = session.studentNumbers;
+          this.filteredStudents = [...this.studentIds];
+        },
+        error: (err) => console.error('Ошибка загрузки сессии:', err),
+      });
+    this.subs.push(s);
+  }
+
+  filterStudents(): void {
+    const query = this.studentSearch.trim();
+    this.filteredStudents = query
+      ? this.studentIds.filter((id) => id.toString().includes(query))
+      : [...this.studentIds];
+
+    this.currentStudentId =
+      this.filteredStudents.length === 1 ? this.filteredStudents[0] : undefined;
   }
 
   canSubmit(): boolean {
     return (
-      typeof this.currentSessionId === 'number' &&
-      typeof this.currentStudentId === 'number' &&
+      this.currentSessionId !== undefined &&
+      this.currentStudentId !== undefined &&
       this.stepScores.length === this.skillSteps.length
     );
   }
 
-  private setStepScores() {
+  private setStepScoresPayload() {
     return this.skillSteps.map((step, index) => ({
       stepId: step.id,
       score: this.stepScores[index],
@@ -111,32 +154,27 @@ export class SkillExam {
     if (!this.canSubmit()) {
       console.error('Форма заполнена некорректно');
       return;
-    } else {
-      const skillTestResult = {
-        id: -1,
-        sessionId: this.currentSessionId as number,
-        studentId: this.currentStudentId as number,
-        teacherId: this.currentTeacherId as number,
-        skillId: this.skill?.id as number,
-        stepScores: this.setStepScores(),
-        resultDate: new Date().toISOString(),
-      };
-
-      this.examService.createResult(skillTestResult).subscribe({
-        next: (result) => {
-          alert('Результат экзамена успешно создан');
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('Ошибка при создании результата экзамена:', err);
-        },
-      });
     }
-  }
 
-  private clamp(n: number, min: number, max: number): number {
-    const v = Number(n);
-    return Math.max(min, Math.min(max, isNaN(v) ? min : v));
+    const skillTestResult = {
+      id: -1,
+      sessionId: this.currentSessionId!,
+      studentId: this.currentStudentId!,
+      teacherId: this.currentTeacherId!,
+      skillId: this.skill?.id ?? -1,
+      stepScores: this.setStepScoresPayload(),
+      resultDate: new Date().toISOString(),
+    };
+
+    const s = this.examService.createResult(skillTestResult).subscribe({
+      next: () => {
+        alert('Результат экзамена успешно создан');
+        this.resetForm();
+      },
+      error: (err) =>
+        console.error('Ошибка при создании результата экзамена:', err),
+    });
+    this.subs.push(s);
   }
 
   getStep(i: number): number {
@@ -145,7 +183,7 @@ export class SkillExam {
 
   setStep(i: number, val: number): void {
     this.stepScores[i] = this.clamp(val, 0, 2);
-    this.score = this.calculateScore(); // пересчёт после изменения
+    this.score = this.calculateScore();
   }
 
   incStep(i: number): void {
@@ -156,16 +194,8 @@ export class SkillExam {
     this.setStep(i, this.getStep(i) - 1);
   }
 
-  onStepInput(i: number, val: any): void {
+  onStepInput(i: number, val: string): void {
     this.setStep(i, Number(val));
-  }
-
-  private resetForm(): void {
-    this.stepScores = new Array(this.skillSteps.length).fill(0);
-    this.currentStudentId = undefined;
-    this.filteredStudents = [...this.studentIds];
-    this.studentSearch = '';
-    this.score = 0;
   }
 
   onStepKeyPress(event: KeyboardEvent): void {
@@ -173,83 +203,43 @@ export class SkillExam {
       '0',
       '1',
       '2',
-      0,
-      1,
-      2,
       'Backspace',
       'ArrowLeft',
       'ArrowRight',
       'Tab',
     ];
-    if (!allowed.includes(event.key)) {
-      event.preventDefault();
-    }
+    if (!allowed.includes(event.key)) event.preventDefault();
   }
 
-  onStepBlur(index: number, event: any): void {
-    const value = event.target.value.trim();
-    if (value === '0' || value === '1' || value === '2') {
-      this.setStep(index, Number(value));
-    } else {
-      this.setStep(index, 0);
-      event.target.value = '0';
-    }
-  }
-
-  studentSearch: string = '';
-  filteredStudents: number[] = [];
-
-  private loadStudents(): void {
-    if (typeof this.currentSessionId === 'number') {
-      this.sessionService.getSessionById(this.currentSessionId).subscribe({
-        next: (session) => {
-          this.studentIds = session.studentNumbers;
-          this.filteredStudents = [...this.studentIds]; // показываем всех при загрузке
-        },
-        error: (err) => {
-          console.error('Ошибка загрузки сессии:', err);
-        },
-      });
-    } else {
-      this.studentIds = [];
-      this.filteredStudents = [];
-    }
-  }
-
-  filterStudents(selectElement?: HTMLSelectElement): void {
-    const query = this.studentSearch.trim().toLowerCase();
-
-    if (query) {
-      this.filteredStudents = this.studentIds.filter((id) =>
-        id.toString().includes(query)
-      );
-    } else {
-      this.filteredStudents = [...this.studentIds];
-    }
-
-    // Если остался один студент — выбираем его сразу
-    if (this.filteredStudents.length === 1) {
-      this.currentStudentId = this.filteredStudents[0];
-    } else {
-      this.currentStudentId = undefined;
-    }
+  onStepBlur(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.trim();
+    this.setStep(index, ['0', '1', '2'].includes(value) ? Number(value) : 0);
+    input.value = this.getStep(index).toString();
   }
 
   private calculateScore(): number {
-    const stepMap = new Map(this.skillSteps.map((s) => [s.id, s]));
-    let total = 0;
-    let maxPossible = 0;
-    this.skillSteps.forEach((step) => {
-      maxPossible += 2;
-    });
-    this.stepScores.forEach((score, i) => {
-      const step = stepMap.get(this.skillSteps[i].id);
-      console.log('Шаг:', step, 'Баллы:', score);
-      total += score;
-      if (score === 0 && step?.mistakePossible) {
-        total -= 1;
-      }
-    });
+    const maxPossible = this.skillSteps.length * 2;
+    const total = this.stepScores.reduce((sum, score, i) => {
+      const step = this.skillSteps[i];
+      let s = score;
+      if (s === 0 && step.mistakePossible) s -= 1;
+      return sum + s;
+    }, 0);
+
     return Math.round((Math.max(total, 0) / maxPossible) * 100);
+  }
+
+  private resetForm(): void {
+    this.stepScores = Array(this.skillSteps.length).fill(0);
+    this.currentStudentId = undefined;
+    this.filteredStudents = [...this.studentIds];
+    this.studentSearch = '';
+    this.score = 0;
+  }
+
+  private clamp(n: number, min: number, max: number): number {
+    const v = Number(n);
+    return Math.max(min, Math.min(max, isNaN(v) ? min : v));
   }
 }

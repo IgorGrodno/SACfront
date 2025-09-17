@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Session } from '../../../../interfaces/session.interface';
 import { SessionService } from '../../../../services/session.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-session-list',
@@ -13,7 +14,7 @@ import { SessionService } from '../../../../services/session.service';
 export class SessionList implements OnInit {
   sessions: Session[] = [];
 
-  constructor(private sessionService: SessionService) {}
+  constructor(private sessionService: SessionService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadSessions();
@@ -53,5 +54,10 @@ export class SessionList implements OnInit {
       },
       error: (err) => console.error('Ошибка при обновлении сессии:', err),
     });
+  }
+
+  viewSessionDetails(sessionId: number): void {
+    console.log('Navigating to session details for ID:', sessionId);
+    this.router.navigate(['/test-result', sessionId]);
   }
 }

@@ -3,7 +3,6 @@ import { Skill } from '../../../../interfaces/skill.interface';
 import { CommonModule } from '@angular/common';
 import { SkillService } from '../../../../services/skill.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DisciplineService } from '../../../../services/discipline.service';
 import { AuthService } from '../../../../services/auth.service';
 
 @Component({

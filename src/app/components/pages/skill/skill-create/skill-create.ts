@@ -22,7 +22,7 @@ import { Skill } from '../../../../interfaces/skill.interface';
 import { SkillStep } from '../../../../interfaces/skillStep.interface';
 import { SkillService } from '../../../../services/skill.service';
 import { StepService } from '../../../../services/step.service';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-skill-create',
@@ -36,9 +36,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   newStepName = '';
   newStepPenalty = false;
 
-  availableSkills: Skill[] = [];
-  skills: Skill[] = [];
-
   availableSteps: SkillStep[] = [];
   skillSteps: SkillStep[] = [];
   filteredSteps: SkillStep[] = [];
@@ -46,17 +43,14 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   availableListHeight = 0;
   skillListHeight = 0;
 
+  allSteps: SkillStep[] = [];
+
+  private readonly DEFAULT_MIN_HEIGHT = 120;
+  private destroy$ = new Subject<void>();
+
   @ViewChildren('availableStepRef')
   availableStepElements!: QueryList<ElementRef>;
-
-  @ViewChildren('skillStepRef')
-  skillStepElements!: QueryList<ElementRef>;
-
-  private subs: Subscription[] = [];
-
-  private readonly DEFAULT_MIN_HEIGHT = 120; // fallback, px
-
-  allSteps: SkillStep[] = [];
+  @ViewChildren('skillStepRef') skillStepElements!: QueryList<ElementRef>;
 
   constructor(
     private skillService: SkillService,
@@ -66,39 +60,135 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const s = this.stepService.getAllSteps().subscribe({
-      next: (data) => {
-        // ---- ВАЖНО: сохраняем все шаги ----
-        this.allSteps = data;
-
-        // исключаем уже добавленные в навык шаги
-        const skillStepIds = new Set(this.skillSteps.map((step) => step.id));
-        this.availableSteps = data.filter((step) => !skillStepIds.has(step.id));
-
-        // обновляем фильтр и высоты
-        this.filterSteps();
-        this.triggerHeightUpdate();
-        console.log('Доступные шаги загружены:', this.availableSteps);
-      },
-      error: (err) => console.error('Ошибка загрузки шагов:', err),
-    });
-    this.subs.push(s);
+    this.loadSteps();
   }
 
   ngAfterViewInit(): void {
-    const s1 = this.availableStepElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    const s2 = this.skillStepElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    this.subs.push(s1, s2);
+    this.availableStepElements.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
+
+    this.skillStepElements.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
 
     this.triggerHeightUpdate();
   }
 
   ngOnDestroy(): void {
-    this.subs.forEach((s) => s.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ----------------- API -----------------
+
+  private loadSteps(): void {
+    this.stepService
+      .getAllSteps()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.allSteps = data;
+          this.updateAvailableSteps();
+        },
+        error: (err) => console.error('Ошибка загрузки шагов:', err),
+      });
+  }
+
+  addStep(): void {
+    if (!this.newStepName.trim()) return;
+
+    const step: SkillStep = {
+      id: -1,
+      name: this.newStepName.trim(),
+      canDelete: true,
+      mistakePossible: this.newStepPenalty,
+    };
+
+    this.stepService
+      .addStep(step)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.newStepName = '';
+          this.newStepPenalty = false;
+          this.loadSteps();
+        },
+        error: (err) => console.error('Ошибка добавления шага:', err),
+      });
+  }
+
+  removeStep(id: number): void {
+    this.stepService
+      .removeStep(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.allSteps = this.allSteps.filter((s) => s.id !== id);
+          this.updateAvailableSteps();
+        },
+        error: (err) => console.error('Ошибка удаления шага:', err),
+      });
+  }
+
+  saveSkill(): void {
+    if (!this.newSkillName.trim() || this.skillSteps.length === 0) return;
+
+    const skill: Skill = {
+      id: 0,
+      name: this.newSkillName.trim(),
+      steps: this.skillSteps,
+      canDelete: true,
+    };
+
+    this.skillService
+      .createSkill(skill)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log('Навык добавлен');
+          this.newSkillName = '';
+          this.skillSteps = [];
+          this.loadSteps();
+        },
+        error: (err) => console.error('Ошибка при добавлении навыка:', err),
+      });
+  }
+
+  // ----------------- UI -----------------
+
+  drop(event: CdkDragDrop<SkillStep[]>): void {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+    }
+    this.updateAvailableSteps();
+  }
+
+  filterSteps(): void {
+    const term = this.newStepName.trim().toLowerCase();
+    this.filteredSteps = term
+      ? this.availableSteps.filter((step) =>
+          step.name.toLowerCase().includes(term)
+        )
+      : [...this.availableSteps];
+  }
+
+  private updateAvailableSteps(): void {
+    const skillStepIds = new Set(this.skillSteps.map((s) => s.id));
+    this.availableSteps = this.allSteps.filter((s) => !skillStepIds.has(s.id));
+    this.filterSteps();
+    this.triggerHeightUpdate();
   }
 
   private triggerHeightUpdate(): void {
@@ -129,138 +219,12 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private calculateTotalHeight(elements: QueryList<ElementRef>): number {
-    if (!elements || elements.length === 0) return 0;
-
-    let total = 0;
-    elements.forEach((el) => {
+    if (!elements?.length) return 0;
+    return elements.toArray().reduce((total, el) => {
       const native = el.nativeElement as HTMLElement;
       const style = window.getComputedStyle(native);
       const marginBottom = parseFloat(style.marginBottom || '0') || 0;
-      total += (native.offsetHeight || 0) + marginBottom;
-    });
-    return total + 12;
-  }
-
-  // ---------------- STEPS ----------------
-
-  addStep(): void {
-    if (!this.newStepName.trim()) return;
-
-    const step: SkillStep = {
-      id: -1,
-      name: this.newStepName.trim(),
-      canDelete: true,
-      mistakePossible: this.newStepPenalty,
-    };
-
-    this.stepService.addStep(step).subscribe({
-      next: () => {
-        // после добавления — обновляем список с сервера и allSteps
-        const s = this.stepService.getAllSteps().subscribe({
-          next: (data) => {
-            this.allSteps = data;
-            const skillStepIds = new Set(
-              this.skillSteps.map((step) => step.id)
-            );
-            this.availableSteps = data.filter(
-              (step) => !skillStepIds.has(step.id)
-            );
-            this.filterSteps();
-            this.triggerHeightUpdate();
-          },
-          error: (err) => console.error('Ошибка загрузки шагов:', err),
-        });
-        this.subs.push(s);
-      },
-      error: (err) => console.error('Ошибка добавления шага:', err),
-    });
-
-    this.newStepPenalty = false;
-    this.updateAvailableSteps();
-  }
-
-  removeStep(id: number) {
-    this.stepService.removeStep(id).subscribe({
-      next: () => {
-        // обновляем локальный allSteps и доступные шаги
-        this.allSteps = this.allSteps.filter((s) => s.id !== id);
-        this.updateAvailableSteps();
-      },
-      error: (err) => console.error('Ошибка удаления шага:', err),
-    });
-  }
-
-  drop(event: CdkDragDrop<SkillStep[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    }
-    this.updateAvailableSteps();
-  }
-
-  saveSkill(): void {
-    if (!this.newSkillName.trim() || this.skillSteps.length === 0) return;
-
-    const skill: Skill = {
-      id: 0,
-      name: this.newSkillName.trim(),
-      steps: this.skillSteps,
-      canDelete: true,
-    };
-
-    this.skillService.createSkill(skill).subscribe({
-      next: () => {
-        console.log('Навык добавлен');
-        this.newSkillName = '';
-        this.skillSteps = [];
-
-        // обновляем allSteps с сервера (чтобы синхронизировать)
-        const s = this.stepService.getAllSteps().subscribe({
-          next: (data) => {
-            this.allSteps = data;
-            this.availableSteps = data;
-            this.filterSteps();
-            this.triggerHeightUpdate();
-          },
-          error: (err) => console.error('Ошибка загрузки шагов:', err),
-        });
-        this.subs.push(s);
-      },
-      error: (err) => console.error('Ошибка при добавлении навыка:', err),
-    });
-  }
-
-  filterSteps(): void {
-    const term = this.newStepName.trim().toLowerCase();
-
-    if (!term) {
-      this.filteredSteps = [...this.availableSteps];
-      return;
-    }
-
-    this.filteredSteps = this.availableSteps.filter((step) =>
-      step.name.toLowerCase().includes(term)
-    );
-
-    this.updateAvailableSteps();
-  }
-
-  private updateAvailableSteps(): void {
-    const skillStepIds = new Set(this.skillSteps.map((s) => s.id));
-    this.availableSteps = this.allSteps.filter(
-      (step) => !skillStepIds.has(step.id)
-    );
-    this.filterSteps(); // обновляем фильтр
-    this.triggerHeightUpdate();
+      return total + (native.offsetHeight || 0) + marginBottom;
+    }, 12);
   }
 }

@@ -98,3 +98,25 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.view-details {
+  margin-top: 10px;
+  background-color: burlywood; /* зелёный фон */
+  color: white; /* белый текст */
+  border: none; /* убираем рамку */
+  padding: 6px 12px; /* внутренние отступы */
+  font-size: 14px; /* размер шрифта */
+  border-radius: 4px; /* скругление углов */
+  cursor: pointer; /* курсор-палец */
+  transition: background-color 0.3s, transform 0.2s; /* плавный переход */
+}
+
+.view-details:hover {
+  background-color: #45a049; /* темнее при наведении */
+  transform: scale(1.05); /* лёгкое увеличение */
+}
+
+.view-details:active {
+  background-color: #3e8e41; /* ещё темнее при клике */
+  transform: scale(0.98); /* лёгкое сжатие */
+}

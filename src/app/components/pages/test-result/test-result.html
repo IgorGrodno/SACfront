@@ -1,0 +1,58 @@
+<div class="results-container">
+  <h2 class="title">Результаты тестов</h2>
+
+  <!-- Спиннер загрузки -->
+  <div *ngIf="isLoading" class="loading">
+    <span class="spinner"></span> Загрузка данных...
+  </div>
+
+  <!-- Таблица результатов -->
+  <table *ngIf="!isLoading && results.length > 0" class="results-table">
+    <thead>
+      <tr>
+        <th>Сессия</th>
+        <th>Навык</th>
+        <th>Студент</th>
+        <th>Преподаватель</th>
+        <th>Результат</th>
+        <th>Дата</th>
+        <th>Действия</th>
+        <!-- новая колонка для кнопки -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let result of results">
+        <td>{{ result.sessionName }}</td>
+        <td>{{ result.skillName }}</td>
+        <td>{{ result.studentId }}</td>
+        <td>{{ result.teacherName }}</td>
+        <td>
+          <span
+            class="score"
+            [ngClass]="{
+              'high-score': result.score >= 75,
+              'mid-score': result.score >= 50 && result.score < 75,
+              'low-score': result.score < 50
+            }"
+          >
+            {{ result.score }}%
+          </span>
+        </td>
+        <td>{{ result.resultDate | date : "dd.MM.yyyy" }}</td>
+        <td>
+          <button class="delete-btn" (click)="deleteResult(result)">
+            Удалить
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <button class="export-btn" (click)="exportToExcel()">
+    📊 Экспорт в Excel
+  </button>
+
+  <!-- Сообщение, если данных нет -->
+  <div *ngIf="!isLoading && results.length === 0" class="empty">
+    Нет результатов для отображения
+  </div>
+</div>

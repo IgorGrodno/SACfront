@@ -10,11 +10,12 @@ import {
   Component,
   ElementRef,
   NgZone,
+  OnDestroy,
   OnInit,
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { Skill } from '../../../../interfaces/skill.interface';
 import { SkillStep } from '../../../../interfaces/skillStep.interface';
 import { SkillService } from '../../../../services/skill.service';
@@ -25,18 +26,16 @@ import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-skill-edit',
+  standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './skill-edit.html',
-  styleUrl: './skill-edit.css',
+  styleUrls: ['./skill-edit.css'],
 })
-export class SkillEdit implements OnInit, AfterViewInit {
-  skill: Skill | undefined;
+export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
+  skill?: Skill;
   newSkillName = '';
   newStepName = '';
   newStepPenalty = false;
-
-  availableSkills: Skill[] = [];
-  skills: Skill[] = [];
 
   availableSteps: SkillStep[] = [];
   skillSteps: SkillStep[] = [];
@@ -45,17 +44,14 @@ export class SkillEdit implements OnInit, AfterViewInit {
   availableListHeight = 0;
   skillListHeight = 0;
 
+  allSteps: SkillStep[] = [];
+
+  private readonly DEFAULT_MIN_HEIGHT = 120;
+  private destroy$ = new Subject<void>();
+
   @ViewChildren('availableStepRef')
   availableStepElements!: QueryList<ElementRef>;
-
-  @ViewChildren('skillStepRef')
-  skillStepElements!: QueryList<ElementRef>;
-
-  private subs: Subscription[] = [];
-
-  private readonly DEFAULT_MIN_HEIGHT = 120; // fallback, px
-
-  allSteps: SkillStep[] = [];
+  @ViewChildren('skillStepRef') skillStepElements!: QueryList<ElementRef>;
 
   constructor(
     private route: ActivatedRoute,
@@ -66,104 +62,71 @@ export class SkillEdit implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    const skillIdParam = this.route.snapshot.paramMap.get('id');
-    const skillId = skillIdParam !== null ? Number(skillIdParam) : undefined;
-
-    if (typeof skillId === 'number' && !isNaN(skillId)) {
-      this.skillService.getSkill(skillId).subscribe({
-        next: (skill) => {
-          this.skill = skill;
-          this.newSkillName = skill.name;
-          this.skillSteps = skill.steps || [];
-          console.log('Навык загружен:', this.skill);
-          this.triggerHeightUpdate();
-        },
-      });
-    }
-
-    const s = this.stepService.getAllSteps().subscribe({
-      next: (data) => {
-        this.allSteps = data; // сохраняем все шаги
-        this.updateAvailableSteps();
-        console.log('Все шаги загружены:', this.allSteps);
-      },
-      error: (err) => console.error('Ошибка загрузки шагов:', err),
-    });
-    this.subs.push(s);
-  }
-
-  private updateAvailableSteps(): void {
-    const skillStepIds = new Set(this.skillSteps.map((s) => s.id));
-    this.availableSteps = this.allSteps.filter(
-      (step) => !skillStepIds.has(step.id)
-    );
-    this.filterSteps(); // обновляем фильтр
-    this.triggerHeightUpdate();
+    this.loadSkill();
+    this.loadSteps();
   }
 
   ngAfterViewInit(): void {
-    // Подписываемся один раз на изменения QueryList
-    const s1 = this.availableStepElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    const s2 = this.skillStepElements.changes.subscribe(() =>
-      this.triggerHeightUpdate()
-    );
-    this.subs.push(s1, s2);
+    this.availableStepElements.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
 
-    // Первичное измерение (после того как DOM отрендерит элементы)
+    this.skillStepElements.changes
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.triggerHeightUpdate());
+
     this.triggerHeightUpdate();
   }
 
   ngOnDestroy(): void {
-    this.subs.forEach((s) => s.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  private triggerHeightUpdate(): void {
-    // Ждём, пока браузер применит layout — requestAnimationFrame работает надёжно
-    this.ngZone.runOutsideAngular(() => {
-      requestAnimationFrame(() => {
-        const availableHeight = this.calculateTotalHeight(
-          this.availableStepElements
-        );
-        const skillHeight = this.calculateTotalHeight(this.skillStepElements);
+  // -------- API --------
 
-        // Берём максимальную высоту (минимальный запас DEFAULT_MIN_HEIGHT)
-        const maxHeight = Math.max(
-          availableHeight,
-          skillHeight,
-          this.DEFAULT_MIN_HEIGHT
-        );
-        const minHeight = Math.max(
-          Math.round(maxHeight * 0.5),
-          this.DEFAULT_MIN_HEIGHT
-        );
+  private loadSkill(): void {
+    const skillIdParam = this.route.snapshot.paramMap.get('id');
+    const skillId = skillIdParam ? Number(skillIdParam) : undefined;
 
-        // Устанавливаем высоты — минимум 50% от максимальной
-        this.ngZone.run(() => {
-          this.availableListHeight = Math.max(availableHeight, minHeight);
-          this.skillListHeight = Math.max(skillHeight, minHeight);
-          this.cdr.detectChanges();
+    if (typeof skillId === 'number' && !isNaN(skillId)) {
+      this.skillService
+        .getSkill(skillId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (skill) => {
+            this.skill = skill;
+            this.newSkillName = skill.name;
+            this.skillSteps = skill.steps ?? [];
+            this.triggerHeightUpdate();
+            console.log('Навык загружен:', skill);
+          },
+          error: (err) => console.error('Ошибка загрузки навыка:', err),
         });
+    }
+  }
+
+  private loadSteps(): void {
+    this.stepService
+      .getAllSteps()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.allSteps = data;
+          this.updateAvailableSteps();
+        },
+        error: (err) => console.error('Ошибка загрузки шагов:', err),
       });
-    });
   }
 
-  private calculateTotalHeight(elements: QueryList<ElementRef>): number {
-    if (!elements || elements.length === 0) return 0;
-
-    let total = 0;
-    elements.forEach((el) => {
-      const native = el.nativeElement as HTMLElement;
-      // offsetHeight + внешний margin-bottom (если есть)
-      const style = window.getComputedStyle(native);
-      const marginBottom = parseFloat(style.marginBottom || '0') || 0;
-      total += (native.offsetHeight || 0) + marginBottom;
-    });
-    return total + 12; // небольшой запас сверху/снизу
+  private updateAvailableSteps(): void {
+    const skillStepIds = new Set(this.skillSteps.map((s) => s.id));
+    this.availableSteps = this.allSteps.filter((s) => !skillStepIds.has(s.id));
+    this.filterSteps();
+    this.triggerHeightUpdate();
   }
 
-  // ---------------- STEPS ----------------
+  // -------- UI / ACTIONS --------
 
   addStep(): void {
     if (!this.newStepName.trim()) return;
@@ -175,33 +138,33 @@ export class SkillEdit implements OnInit, AfterViewInit {
       mistakePossible: this.newStepPenalty,
     };
 
-    this.stepService.addStep(step).subscribe({
-      next: () => {
-        this.stepService.getAllSteps().subscribe({
-          next: (data) => {
-            this.allSteps = data;
-            this.updateAvailableSteps(); // пересчитываем доступные шаги
-          },
-          error: (err) => console.error('Ошибка загрузки шагов:', err),
-        });
-      },
-      error: (err) => console.error('Ошибка добавления шага:', err),
-    });
-
-    this.newStepPenalty = false;
+    // Сброс сразу, чтобы UI обновился
     this.newStepName = '';
+    this.newStepPenalty = false;
+
+    this.stepService
+      .addStep(step)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.loadSteps(),
+        error: (err) => console.error('Ошибка добавления шага:', err),
+      });
   }
 
-  removeStep(id: number) {
-    this.stepService.removeStep(id).subscribe({
-      next: () => {
-        this.skillSteps = this.skillSteps.filter((s) => s.id !== id);
-        this.updateAvailableSteps();
-      },
-    });
+  removeStep(id: number): void {
+    this.stepService
+      .removeStep(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.skillSteps = this.skillSteps.filter((s) => s.id !== id);
+          this.updateAvailableSteps();
+        },
+        error: (err) => console.error('Ошибка удаления шага:', err),
+      });
   }
 
-  drop(event: CdkDragDrop<SkillStep[]>) {
+  drop(event: CdkDragDrop<SkillStep[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -216,32 +179,26 @@ export class SkillEdit implements OnInit, AfterViewInit {
         event.currentIndex
       );
     }
-    this.updateAvailableSteps(); // пересчитываем доступные шаги после drag&drop
+    this.updateAvailableSteps();
   }
 
   saveSkill(): void {
     if (!this.newSkillName.trim() || this.skillSteps.length === 0) return;
 
     const skill: Skill = {
-      id: this.skill ? this.skill.id : -1,
+      id: this.skill?.id ?? -1,
       name: this.newSkillName.trim(),
       steps: this.skillSteps,
       canDelete: true,
     };
 
     this.skillService
-      .updateSkill(this.skill ? this.skill.id : -1, skill)
+      .updateSkill(skill.id, skill)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           console.log('Навык обновлён');
-          const s = this.stepService.getAllSteps().subscribe({
-            next: (data) => {
-              this.availableSteps = data;
-              this.triggerHeightUpdate();
-            },
-            error: (err) => console.error('Ошибка загрузки шагов:', err),
-          });
-          this.subs.push(s);
+          this.loadSteps();
         },
         error: (err) => console.error('Ошибка при обновлении навыка:', err),
       });
@@ -249,15 +206,47 @@ export class SkillEdit implements OnInit, AfterViewInit {
 
   filterSteps(): void {
     const term = this.newStepName.trim().toLowerCase();
+    this.filteredSteps = term
+      ? this.availableSteps.filter((s) => s.name.toLowerCase().includes(term))
+      : [...this.availableSteps];
+  }
 
-    if (!term) {
-      // если пусто — показываем все
-      this.filteredSteps = [...this.availableSteps];
-      return;
-    }
+  // -------- UI Helpers --------
 
-    this.filteredSteps = this.availableSteps.filter((step) =>
-      step.name.toLowerCase().includes(term)
-    );
+  private triggerHeightUpdate(): void {
+    this.ngZone.runOutsideAngular(() => {
+      requestAnimationFrame(() => {
+        const availableHeight = this.calculateTotalHeight(
+          this.availableStepElements
+        );
+        const skillHeight = this.calculateTotalHeight(this.skillStepElements);
+
+        const maxHeight = Math.max(
+          availableHeight,
+          skillHeight,
+          this.DEFAULT_MIN_HEIGHT
+        );
+        const minHeight = Math.max(
+          Math.round(maxHeight * 0.5),
+          this.DEFAULT_MIN_HEIGHT
+        );
+
+        this.ngZone.run(() => {
+          this.availableListHeight = Math.max(availableHeight, minHeight);
+          this.skillListHeight = Math.max(skillHeight, minHeight);
+          this.cdr.detectChanges();
+        });
+      });
+    });
+  }
+
+  private calculateTotalHeight(elements: QueryList<ElementRef>): number {
+    if (!elements?.length) return 0;
+    return elements.toArray().reduce((total, el) => {
+      const native = el.nativeElement as HTMLElement;
+      const style = window.getComputedStyle(native);
+      const marginBottom = parseFloat(style.marginBottom || '0') || 0;
+      return total + (native.offsetHeight || 0) + marginBottom;
+    }, 12);
   }
 }

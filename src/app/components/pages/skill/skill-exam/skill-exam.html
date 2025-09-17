@@ -20,7 +20,7 @@
           *ngFor="let session of activeSessionList"
           [ngValue]="session.id"
         >
-          Сессия: {{ session.id }}
+          {{ session.name || "Сессия " + session.id }}
         </option>
       </select>
     </ng-template>
@@ -33,14 +33,13 @@
       id="studentSearch"
       type="text"
       [(ngModel)]="studentSearch"
-      (input)="filterStudents(studentSelect)"
+      (input)="filterStudents()"
       placeholder="Введите номер студента"
       class="form-control"
     />
 
     <label for="student">Студент:</label>
     <select
-      #studentSelect
       id="student"
       [(ngModel)]="currentStudentId"
       required
@@ -68,7 +67,6 @@
           [value]="getStep(i)"
           (keypress)="onStepKeyPress($event)"
           (blur)="onStepBlur(i, $event)"
-          readonly="false"
         />
 
         <button type="button" (click)="incStep(i)" [disabled]="getStep(i) >= 2">
@@ -77,8 +75,9 @@
       </div>
     </div>
   </div>
+
   <span>{{ score }} %</span>
-  <!-- Кнопка отправки -->
+
   <button (click)="submitExam()" [disabled]="!canSubmit()" class="btn-submit">
     Отправить
   </button>

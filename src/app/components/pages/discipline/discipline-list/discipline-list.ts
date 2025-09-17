@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Discipline } from '../../../../interfaces/discipline.interface';
 import { DisciplineService } from '../../../../services/discipline.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-discipline-list',
@@ -12,31 +13,21 @@ import { DisciplineService } from '../../../../services/discipline.service';
 })
 export class DisciplineList implements OnInit {
   disciplines: Discipline[] = [];
-  loading = true;
-  error: string | null = null;
 
-  constructor(private disciplineService: DisciplineService) {}
+  constructor(
+    private disciplineService: DisciplineService,
+    private router: Router
+  ) {}
 
-  ngOnInit(): void {
-    this.loadDisciplines();
+  ngOnInit() {
+    this.disciplineService.getDisciplines().subscribe({
+      next: (data) => (this.disciplines = data),
+      error: (err) => console.error('Ошибка загрузки дисциплин:', err),
+    });
   }
 
-  loadDisciplines(): void {
-    this.loading = true;
-    this.error = null;
-
-    this.disciplineService.getDisciplines().subscribe({
-      next: (data) => {
-        this.disciplines = data;
-        this.loading = false;
-        console.log(this.disciplines);
-      },
-      error: (err) => {
-        console.error('Ошибка загрузки дисциплин:', err);
-        this.error = 'Не удалось загрузить дисциплины';
-        this.loading = false;
-      },
-    });
+  goDisciplineEdit(id: number) {
+    this.router.navigate(['/discipline-edit', id]);
   }
 
   removeDiscipline(id: number): void {

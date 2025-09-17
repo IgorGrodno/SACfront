@@ -14,12 +14,23 @@ import { DisciplineList } from './components/pages/discipline/discipline-list/di
 import { DisciplineListExam } from './components/pages/discipline/discipline-list-exam/discipline-list-exam';
 import { SkillExam } from './components/pages/skill/skill-exam/skill-exam';
 import { SkillEdit } from './components/pages/skill/skill-edit/skill-edit';
+import { TestResult } from './components/pages/test-result/test-result';
 
 export const routes: Routes = [
   {
     path: '',
     component: DisciplineListExam,
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'test-result',
+    component: TestResult,
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'test-result/:id',
+    component: TestResult,
+    canActivate: [AdminGuard],
   },
   {
     path: 'discipline-create',
