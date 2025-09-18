@@ -110,7 +110,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.newStepName = '';
           this.newStepPenalty = false;
           this.loadSteps();
         },

@@ -33,6 +33,18 @@ export class TestResult implements OnInit {
   isLoading = false;
   sessionId?: string;
 
+  activeTab: 'all' | 'students' | 'skills' = 'all';
+
+  sortColumn: keyof TestResultView | null = null;
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  selectedStudentId?: number;
+  uniqueStudents: number[] = [];
+
+  // ✅ Новое состояние для вкладки "Дисциплины"
+  uniqueSkills: string[] = [];
+  selectedSkill?: string;
+
   constructor(
     private route: ActivatedRoute,
     private resultsService: SkillTestResultsService,
@@ -49,169 +61,93 @@ export class TestResult implements OnInit {
     this.isLoading = true;
 
     this.sessionId = this.route.snapshot.paramMap.get('id') ?? undefined;
-    if (this.sessionId) {
-      console.log('Loading results for session ID:', this.sessionId);
-      this.resultsService.getBySessionId(Number(this.sessionId)).subscribe({
-        next: (data) => {
-          if (!data || data.length === 0) {
-            this.results = [];
-            this.isLoading = false;
-            return;
-          }
+    const request$ = this.sessionId
+      ? this.resultsService.getBySessionId(Number(this.sessionId))
+      : this.resultsService.getAll();
 
-          const sessionIds = [...new Set(data.map((r) => r.sessionId))];
-          const skillIds = [...new Set(data.map((r) => r.skillId))];
-          const teacherIds = [...new Set(data.map((r) => r.teacherId))];
-
-          // параллельные запросы
-          Promise.all([
-            Promise.all(
-              sessionIds.map((id) =>
-                firstValueFrom(this.sessionService.getSessionById(id))
-              )
-            ),
-            Promise.all(
-              skillIds.map((id) =>
-                firstValueFrom(this.skillService.getSkill(id))
-              )
-            ),
-            Promise.all(
-              teacherIds.map((id) =>
-                firstValueFrom(this.profileService.getProfile(id))
-              )
-            ),
-          ])
-            .then(([sessions, skills, teachers]) => {
-              const sessionMap = new Map(
-                sessionIds.map((id, i) => [id, sessions[i]?.name ?? ''])
-              );
-              const skillMap = new Map(
-                skillIds.map((id, i) => [id, skills[i]?.name ?? ''])
-              );
-              const teacherMap = new Map(
-                teacherIds.map((id, i) => [
-                  id,
-                  teachers[i]
-                    ? `${teachers[i].firstName ?? ''} ${
-                        teachers[i].secondName ?? ''
-                      } ${teachers[i].fatherName ?? ''}`.trim()
-                    : '',
-                ])
-              );
-
-              this.results = data
-                .map((result) => ({
-                  id: result.id ?? 0,
-                  sessionName: sessionMap.get(result.sessionId) || '',
-                  skillName: skillMap.get(result.skillId) || '',
-                  studentId: result.studentId,
-                  teacherName: teacherMap.get(result.teacherId) || '',
-                  score: this.calculateScore(result.stepScores),
-                  resultDate: new Date(result.resultDate),
-                }))
-                .sort(
-                  (a, b) => b.resultDate.getTime() - a.resultDate.getTime()
-                );
-            })
-            .catch((err) =>
-              console.error('Ошибка при загрузке связанных данных', err)
-            )
-            .finally(() => (this.isLoading = false));
-        },
-        error: (err) => {
-          console.error('Ошибка при загрузке результатов', err);
+    request$.subscribe({
+      next: (data) => {
+        if (!data || data.length === 0) {
           this.results = [];
           this.isLoading = false;
-        },
-      });
-    } else {
-      console.log('Loading all results');
-      this.resultsService.getAll().subscribe({
-        next: (data) => {
-          if (!data || data.length === 0) {
-            this.results = [];
-            this.isLoading = false;
-            return;
-          }
+          return;
+        }
 
-          const sessionIds = [...new Set(data.map((r) => r.sessionId))];
-          const skillIds = [...new Set(data.map((r) => r.skillId))];
-          const teacherIds = [...new Set(data.map((r) => r.teacherId))];
+        const sessionIds = [...new Set(data.map((r) => r.sessionId))];
+        const skillIds = [...new Set(data.map((r) => r.skillId))];
+        const teacherIds = [...new Set(data.map((r) => r.teacherId))];
 
-          // параллельные запросы
-          Promise.all([
-            Promise.all(
-              sessionIds.map((id) =>
-                firstValueFrom(this.sessionService.getSessionById(id))
-              )
-            ),
-            Promise.all(
-              skillIds.map((id) =>
-                firstValueFrom(this.skillService.getSkill(id))
-              )
-            ),
-            Promise.all(
-              teacherIds.map((id) =>
-                firstValueFrom(this.profileService.getProfile(id))
-              )
-            ),
-          ])
-            .then(([sessions, skills, teachers]) => {
-              const sessionMap = new Map(
-                sessionIds.map((id, i) => [id, sessions[i]?.name ?? ''])
-              );
-              const skillMap = new Map(
-                skillIds.map((id, i) => [id, skills[i]?.name ?? ''])
-              );
-              const teacherMap = new Map(
-                teacherIds.map((id, i) => [
-                  id,
-                  teachers[i]
-                    ? `${teachers[i].firstName ?? ''} ${
-                        teachers[i].secondName ?? ''
-                      } ${teachers[i].fatherName ?? ''}`.trim()
-                    : '',
-                ])
-              );
-
-              this.results = data
-                .map((result) => ({
-                  id: result.id ?? 0,
-                  sessionName: sessionMap.get(result.sessionId) || '',
-                  skillName: skillMap.get(result.skillId) || '',
-                  studentId: result.studentId,
-                  teacherName: teacherMap.get(result.teacherId) || '',
-                  score: this.calculateScore(result.stepScores),
-                  resultDate: new Date(result.resultDate),
-                }))
-                .sort(
-                  (a, b) => b.resultDate.getTime() - a.resultDate.getTime()
-                );
-            })
-            .catch((err) =>
-              console.error('Ошибка при загрузке связанных данных', err)
+        Promise.all([
+          Promise.all(
+            sessionIds.map((id) =>
+              firstValueFrom(this.sessionService.getSessionById(id))
             )
-            .finally(() => (this.isLoading = false));
-        },
-        error: (err) => {
-          console.error('Ошибка при загрузке результатов', err);
-          this.results = [];
-          this.isLoading = false;
-        },
-      });
-    }
+          ),
+          Promise.all(
+            skillIds.map((id) => firstValueFrom(this.skillService.getSkill(id)))
+          ),
+          Promise.all(
+            teacherIds.map((id) =>
+              firstValueFrom(this.profileService.getProfile(id))
+            )
+          ),
+        ])
+          .then(([sessions, skills, teachers]) => {
+            const sessionMap = new Map(
+              sessionIds.map((id, i) => [id, sessions[i]?.name ?? ''])
+            );
+            const skillMap = new Map(
+              skillIds.map((id, i) => [id, skills[i]?.name ?? ''])
+            );
+            const teacherMap = new Map(
+              teacherIds.map((id, i) => [
+                id,
+                teachers[i]
+                  ? `${teachers[i].firstName ?? ''} ${
+                      teachers[i].secondName ?? ''
+                    } ${teachers[i].fatherName ?? ''}`.trim()
+                  : '',
+              ])
+            );
+
+            this.results = data
+              .map((result) => ({
+                id: result.id ?? 0,
+                sessionName: sessionMap.get(result.sessionId) || '',
+                skillName: skillMap.get(result.skillId) || '',
+                studentId: result.studentId,
+                teacherName: teacherMap.get(result.teacherId) || '',
+                score: this.calculateScore(result.stepScores),
+                resultDate: new Date(result.resultDate),
+              }))
+              .sort((a, b) => b.resultDate.getTime() - a.resultDate.getTime());
+
+            this.uniqueStudents = [
+              ...new Set(this.results.map((r) => r.studentId)),
+            ];
+            this.uniqueSkills = [
+              ...new Set(this.results.map((r) => r.skillName)),
+            ];
+          })
+          .catch((err) =>
+            console.error('Ошибка при загрузке связанных данных', err)
+          )
+          .finally(() => (this.isLoading = false));
+      },
+      error: (err) => {
+        console.error('Ошибка при загрузке результатов', err);
+        this.results = [];
+        this.isLoading = false;
+      },
+    });
   }
 
   async deleteResult(result: TestResultView) {
     if (!confirm(`Удалить результат студента ${result.studentId}?`)) return;
-
     this.isLoading = true;
     try {
       await firstValueFrom(this.resultsService.delete(result.id));
       this.results = this.results.filter((r) => r.id !== result.id);
-      console.log(`Результат студента ${result.studentId} удалён`);
-    } catch (err) {
-      console.error('Ошибка при удалении результата', err);
     } finally {
       this.isLoading = false;
     }
@@ -237,97 +173,100 @@ export class TestResult implements OnInit {
       { header: 'Дата', key: 'date' },
     ];
 
-    this.results.forEach((r) => {
+    this.results.forEach((r) =>
       worksheet.addRow({
         session: r.sessionName,
         skill: r.skillName,
         student: r.studentId,
         teacher: r.teacherName,
         result: `${r.score}%`,
-        date:
-          r.resultDate instanceof Date ? r.resultDate : new Date(r.resultDate),
-      });
-    });
+        date: r.resultDate,
+      })
+    );
 
-    // Заголовок
-    const headerRow = worksheet.getRow(1);
-    headerRow.font = { bold: true };
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-    headerRow.eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFF3F3F3' },
-      };
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' },
-      };
-    });
-
-    // Формат колонки с датой
+    worksheet.getRow(1).font = { bold: true };
     worksheet.getColumn('date').numFmt = 'dd.mm.yyyy';
+    worksheet.getColumn('skill').alignment = { wrapText: true };
+    worksheet.getColumn('teacher').alignment = { wrapText: true };
 
-    // Выравнивание для отдельных колонок
-    worksheet.getColumn('result').alignment = { horizontal: 'center' };
-    worksheet.getColumn('student').alignment = { horizontal: 'center' };
-
-    // ✅ Перенос текста в колонках "Преподаватель" и "Навык"
-    worksheet.getColumn('teacher').alignment = {
-      wrapText: true,
-      vertical: 'middle',
-    };
-    worksheet.getColumn('skill').alignment = {
-      wrapText: true,
-      vertical: 'middle',
-    };
-
-    // Универсальное выравнивание по центру по вертикали
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        cell.alignment = { ...cell.alignment, vertical: 'middle' };
-      });
-    });
-
-    // Автоширина
-    worksheet.columns.forEach((column) => {
-      let maxLength = 10;
-      if (typeof column.eachCell === 'function') {
-        column.eachCell({ includeEmpty: true }, (cell) => {
-          let text = '';
-          if (cell.value === null || cell.value === undefined) {
-            text = '';
-          } else if (cell.type === ExcelJS.ValueType.Date) {
-            text = (cell.value as Date).toLocaleDateString('ru-RU');
-          } else if (
-            typeof cell.value === 'object' &&
-            'text' in (cell.value as any)
-          ) {
-            text = (cell.value as any).text;
-          } else {
-            text = String(cell.value);
-          }
-          if (text.length > maxLength) maxLength = text.length;
-        });
-      }
-      column.width = maxLength + 2;
-    });
-
-    // ✅ Минимальная высота строк (на 2 строки текста)
-    worksheet.eachRow((row) => {
-      if (!row.height || row.height < 30) {
-        row.height = 30;
-      }
-    });
-
-    // Сохранение
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    saveAs(
+      new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }),
+      `Результаты_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+  }
+
+  sortBy(column: keyof TestResultView): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.results.sort((a, b) => {
+      let valueA = a[column];
+      let valueB = b[column];
+      if (valueA instanceof Date && valueB instanceof Date) {
+        return this.sortDirection === 'asc'
+          ? valueA.getTime() - valueB.getTime()
+          : valueB.getTime() - valueA.getTime();
+      }
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+      }
+      valueA = valueA?.toString().toLowerCase() ?? '';
+      valueB = valueB?.toString().toLowerCase() ?? '';
+      return this.sortDirection === 'asc'
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
     });
-    const filename = `Результаты_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    saveAs(blob, filename);
+  }
+
+  setActiveTab(tab: 'all' | 'students' | 'skills') {
+    this.activeTab = tab;
+    this.selectedStudentId = undefined;
+    this.selectedSkill = undefined;
+  }
+
+  selectStudent(studentId: number) {
+    this.selectedStudentId = studentId;
+  }
+
+  getResultsForSelectedStudent() {
+    if (!this.selectedStudentId) return [];
+    return this.results.filter((r) => r.studentId === this.selectedStudentId);
+  }
+
+  selectSkill(skill: string) {
+    this.selectedSkill = skill;
+  }
+
+  getResultsForSelectedSkill() {
+    if (!this.selectedSkill) return [];
+    return this.results.filter((r) => r.skillName === this.selectedSkill);
+  }
+
+  // Средний результат по выбранной дисциплине
+  getAverageScoreForSkill(skill: string): number {
+    const skillResults = this.results.filter((r) => r.skillName === skill);
+    if (skillResults.length === 0) return 0;
+    const total = skillResults.reduce((sum, r) => sum + r.score, 0);
+    return Math.round(total / skillResults.length);
+  }
+
+  // Средний результат для отображения в таблице студентов по выбранной дисциплине
+  getAverageScoreForSelectedSkill(): number {
+    return this.selectedSkill
+      ? this.getAverageScoreForSkill(this.selectedSkill)
+      : 0;
+  }
+
+  getStudentCountForSkill(skill: string): number {
+    return this.results
+      ? this.results.filter((r) => r.skillName === skill).length
+      : 0;
   }
 }

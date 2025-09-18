@@ -1,10 +1,16 @@
 .results-container {
-  max-width: 100%;
-  margin: 20px auto;
+  width: 100%;
+  margin: 0;
   padding: 20px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 70vh; /* ✅ контейнер занимает хотя бы 70% высоты экрана */
+  box-sizing: border-box;
 }
 
 .title {
@@ -40,6 +46,9 @@
 .results-table {
   width: 100%;
   border-collapse: collapse;
+  display: block; /* ✅ делаем блочной */
+  overflow-x: auto; /* ✅ включаем горизонтальный скролл при нехватке места */
+  white-space: nowrap; /* чтобы колонки не сжимались до нечитабельного состояния */
 }
 
 .results-table th,
@@ -52,6 +61,13 @@
 .results-table th {
   background: #f5f5f5;
   font-weight: 600;
+  user-select: none;
+  cursor: pointer; /* ✅ курсор-рука для сортировки */
+  transition: background-color 0.2s;
+}
+
+.results-table th:hover {
+  background-color: #e9ecef; /* подсветка при наведении */
 }
 
 .score {
@@ -91,7 +107,7 @@
   border: none;
   padding: 8px 14px;
   border-radius: 6px;
-  cursor: pointer;
+  cursor: pointer; /* ✅ курсор-рука */
   font-size: 14px;
   margin-bottom: 12px;
   transition: background-color 0.2s, transform 0.1s;
@@ -103,4 +119,174 @@
 
 .export-btn:active {
   transform: scale(0.97);
+}
+
+/* ✅ стиль для кнопки удаления */
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer; /* ✅ курсор-рука */
+  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.delete-btn:hover {
+  background-color: #b02a37;
+}
+
+/* ... твои предыдущие стили ... */
+
+.results-table th,
+.results-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap; /* чтобы текст не переносился */
+}
+
+/* ✅ делаем шире конкретные колонки */
+.results-table th:nth-child(3), /* Студент */
+.results-table td:nth-child(3) {
+  min-width: 90px; /* можно 100px, если длинные ID */
+  text-align: center;
+}
+
+.results-table th:nth-child(5), /* Результат */
+.results-table td:nth-child(5) {
+  min-width: 110px;
+  text-align: center; /* чтобы красиво смотрелось */
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tab {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.tab:hover {
+  background: #e9ecef;
+}
+
+.tab.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.tab-content {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #555;
+  padding: 20px 0;
+}
+.students-tab {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.students-list {
+  flex: 0 0 200px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.students-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.students-list li {
+  padding: 8px 12px;
+  margin: 4px 0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.students-list li:hover {
+  background: #e9ecef;
+}
+
+.students-list li.active {
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.student-results {
+  flex: 1;
+  min-width: 300px;
+}
+
+.student-placeholder {
+  flex: 1;
+  text-align: center;
+  color: #777;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Оставляем запрет на перенос для всех по умолчанию */
+.results-table th,
+.results-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ✅ Разрешаем перенос текста в колонке "Дисциплина" */
+.results-table th:nth-child(1),
+.results-table td:nth-child(1) {
+  white-space: normal; /* включаем перенос */
+  word-break: break-word; /* переносим длинные слова */
+  max-width: 250px; /* ограничиваем ширину, чтобы не растягивалась вся таблица */
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
+.skill-card {
+  flex: 0 0 200px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  text-align: center;
+}
+
+.skill-card:hover {
+  background: #e9ecef;
+  transform: translateY(-3px);
+}
+
+.skill-card.active {
+  background: #007bff;
+  color: white;
+  font-weight: 600;
 }
