@@ -15,6 +15,7 @@ import { DisciplineListExam } from './components/pages/discipline/discipline-lis
 import { SkillExam } from './components/pages/skill/skill-exam/skill-exam';
 import { SkillEdit } from './components/pages/skill/skill-edit/skill-edit';
 import { TestResult } from './components/pages/test-result/test-result';
+import { DisciplineEdit } from './components/pages/discipline/discipline-edit/discipline-edit';
 
 export const routes: Routes = [
   {
@@ -35,6 +36,11 @@ export const routes: Routes = [
   {
     path: 'discipline-create',
     component: DisciplineCreate,
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'discipline-edit/:id',
+    component: DisciplineEdit,
     canActivate: [AdminGuard],
   },
   {

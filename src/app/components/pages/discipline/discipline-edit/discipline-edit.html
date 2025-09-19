@@ -1,0 +1,68 @@
+<h2>Изменить Дисциплину</h2>
+<label>
+  Название дисциплины:
+  <input
+    [(ngModel)]="newDisciplineName"
+    placeholder="Введите название дисциплины"
+  />
+</label>
+<button class="add-discipline-button" (click)="saveDiscipline()">
+  Изменить дисциплину
+</button>
+
+<div class="lists-container">
+  <div class="step-list">
+    <h3>Навыки дисциплины</h3>
+    <div
+      #disciplineListContainer
+      cdkDropList
+      id="disciplineSkillsList"
+      [cdkDropListData]="disciplineSkills"
+      [cdkDropListConnectedTo]="['availableSkillsList']"
+      class="dropzone"
+      [style.height.px]="disciplineListHeight"
+      (cdkDropListDropped)="dropSkill($event)"
+    >
+      <div
+        #disciplineSkillRef
+        class="step-item"
+        *ngFor="let skill of disciplineSkills"
+        cdkDrag
+      >
+        {{ skill.name }}
+      </div>
+    </div>
+  </div>
+
+  <div class="step-list">
+    <h3>Доступные навыки</h3>
+    <div
+      #availableSkillsContainer
+      cdkDropList
+      id="availableSkillsList"
+      [cdkDropListData]="availableSkillsForDiscipline"
+      [cdkDropListConnectedTo]="['disciplineSkillsList']"
+      class="dropzone"
+      [style.height.px]="availableDisciplineListHeight"
+      (cdkDropListDropped)="dropSkill($event)"
+    >
+      <div
+        #availableSkillRef
+        class="step-item"
+        *ngFor="let skill of availableSkillsForDiscipline"
+        cdkDrag
+      >
+        <span class="step-name">{{ skill.name }}</span>
+        <button
+          *ngIf="skill.canDelete"
+          type="button"
+          class="remove-btn"
+          aria-label="Удалить навык"
+          (click)="$event.stopPropagation()"
+        >
+          ✖
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,183 +1,136 @@
-<div class="results-container">
-  <h2 class="title">Результаты тестов</h2>
+<div class="tabs">
+  <button [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
+    Все
+  </button>
+  <button
+    [class.active]="activeTab === 'students'"
+    (click)="setActiveTab('students')"
+  >
+    Студенты
+  </button>
+  <button
+    [class.active]="activeTab === 'skills'"
+    (click)="setActiveTab('skills')"
+  >
+    Навыки
+  </button>
+  <button
+    [class.active]="activeTab === 'disciplines'"
+    (click)="setActiveTab('disciplines')"
+  >
+    Дисциплины
+  </button>
+</div>
 
-  <!-- Вкладки -->
-  <div class="tabs">
+<!-- Все результаты -->
+<div id="all-tab" *ngIf="activeTab === 'all'" class="tab-panel">
+  <form [formGroup]="filterForm" class="filter-form">
+    <label>Студент от: <input type="number" formControlName="from" /></label>
+    <label>до: <input type="number" formControlName="to" /></label>
+  </form>
+
+  <table *ngIf="!isLoading && filteredResults.length" class="results-table">
+    <thead>
+      <tr>
+        <th (click)="sortBy('sessionName')" *ngIf="!sessionId">Сессия</th>
+        <th (click)="sortBy('disciplineName')">Дисциплина</th>
+        <th (click)="sortBy('skillName')">Навык</th>
+        <th (click)="sortBy('studentId')">Студент</th>
+        <th (click)="sortBy('teacherName')">Преподаватель</th>
+        <th (click)="sortBy('score')">Результат</th>
+        <th (click)="sortBy('resultDate')">Дата</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of filteredResults">
+        <td *ngIf="!sessionId">{{ r.sessionName }}</td>
+        <td>{{ r.disciplineName }}</td>
+        <td>{{ r.skillName }}</td>
+        <td>{{ r.studentId }}</td>
+        <td>{{ r.teacherName }}</td>
+        <td>{{ r.score }}%</td>
+        <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="!isLoading && filteredResults.length === 0" class="empty">
+    Нет результатов
+  </div>
+</div>
+
+<!-- Студенты -->
+<div *ngIf="activeTab === 'students'" class="tab-panel">
+  <div class="student-list">
     <button
-      class="tab"
-      [class.active]="activeTab === 'all'"
-      (click)="setActiveTab('all')"
+      *ngFor="let s of uniqueStudents"
+      (click)="selectedStudentId = s"
+      [class.active]="selectedStudentId === s"
     >
-      Все
-    </button>
-    <button
-      class="tab"
-      [class.active]="activeTab === 'students'"
-      (click)="setActiveTab('students')"
-    >
-      Студенты
-    </button>
-    <button
-      class="tab"
-      [class.active]="activeTab === 'skills'"
-      (click)="setActiveTab('skills')"
-    >
-      Дисциплины
+      {{ s }}
     </button>
   </div>
-
-  <!-- Вкладка "Все" -->
-  <div *ngIf="activeTab === 'all'">
-    <div *ngIf="isLoading" class="loading">
-      <span class="spinner"></span> Загрузка данных...
-    </div>
-
-    <table *ngIf="!isLoading && results.length > 0" class="results-table">
+  <div *ngIf="selectedStudentId" class="card">
+    <h3>Результаты студента {{ selectedStudentId }}</h3>
+    <table>
       <thead>
         <tr>
-          <th (click)="sortBy('sessionName')">Сессия</th>
-          <th (click)="sortBy('skillName')">Навык</th>
-          <th (click)="sortBy('studentId')">Студент</th>
-          <th (click)="sortBy('teacherName')">Преподаватель</th>
-          <th (click)="sortBy('score')">Результат</th>
-          <th (click)="sortBy('resultDate')">Дата</th>
-          <th>Действия</th>
+          <th>Дисциплина</th>
+          <th>Навык</th>
+          <th>Результат</th>
+          <th>Дата</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let result of results">
-          <td>{{ result.sessionName }}</td>
-          <td>{{ result.skillName }}</td>
-          <td>{{ result.studentId }}</td>
-          <td>{{ result.teacherName }}</td>
-          <td>
-            <span
-              class="score"
-              [ngClass]="{
-                'high-score': result.score >= 75,
-                'mid-score': result.score >= 50 && result.score < 75,
-                'low-score': result.score < 50
-              }"
-            >
-              {{ result.score }}%
-            </span>
-          </td>
-          <td>{{ result.resultDate | date : "dd.MM.yyyy" }}</td>
-          <td>
-            <button class="delete-btn" (click)="deleteResult(result)">
-              Удалить
-            </button>
-          </td>
+        <tr *ngFor="let r of getResultsForSelectedStudent()">
+          <td>{{ r.disciplineName }}</td>
+          <td>{{ r.skillName }}</td>
+          <td>{{ r.score }}%</td>
+          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
         </tr>
       </tbody>
     </table>
-
-    <button class="export-btn" (click)="exportToExcel()">
-      📊 Экспорт в Excel
-    </button>
-    <div *ngIf="!isLoading && results.length === 0" class="empty">
-      Нет результатов
-    </div>
   </div>
+</div>
 
-  <!-- Вкладка "Студенты" -->
-  <div *ngIf="activeTab === 'students'" class="students-tab">
-    <div class="students-list">
-      <h3>Студенты</h3>
-      <ul>
-        <li
-          *ngFor="let student of uniqueStudents"
-          (click)="selectStudent(student)"
-          [class.active]="student === selectedStudentId"
-        >
-          {{ student }}
-        </li>
-      </ul>
-    </div>
-
-    <div class="student-results" *ngIf="selectedStudentId">
-      <h3>Результаты студента {{ selectedStudentId }}</h3>
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Дисциплина</th>
-            <th>Преподаватель</th>
-            <th>Результат</th>
-            <th>Дата</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let res of getResultsForSelectedStudent()">
-            <td>{{ res.skillName }}</td>
-            <td>{{ res.teacherName }}</td>
-            <td>
-              <span
-                class="score"
-                [ngClass]="{
-                  'high-score': res.score >= 75,
-                  'mid-score': res.score >= 50 && res.score < 75,
-                  'low-score': res.score < 50
-                }"
-              >
-                {{ res.score }}%
-              </span>
-            </td>
-            <td>{{ res.resultDate | date : "dd.MM.yyyy" }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Вкладка "Дисциплины" -->
-  <div *ngIf="activeTab === 'skills'" class="tab-content">
-    <div class="skills-list">
-      <div
-        class="skill-card"
-        *ngFor="let skill of uniqueSkills"
-        (click)="selectSkill(skill)"
-        [class.active]="skill === selectedSkill"
+<!-- Навыки -->
+<div *ngIf="activeTab === 'skills'" class="tab-panel">
+  <div class="skill-list">
+    <div *ngFor="let skill of uniqueSkills" class="skill-item">
+      <span
+        (click)="selectedSkill = skill"
+        [class.active]="selectedSkill === skill"
+        >{{ skill }}</span
       >
-        <h4>{{ skill }}</h4>
-        <p>Средний балл: {{ getAverageScoreForSkill(skill) }}%</p>
-      </div>
+      <span class="avg">Средний: {{ getAverageScoreForSkill(skill) }}%</span>
     </div>
+  </div>
+  <div *ngIf="selectedSkill" class="card">
+    <h3>Результаты по навыку {{ selectedSkill }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Студент</th>
+          <th>Результат</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of getResultsForSelectedSkill()">
+          <td>{{ r.studentId }}</td>
+          <td>{{ r.score }}%</td>
+          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-    <div class="skill-results" *ngIf="selectedSkill">
-      <h3>Результаты по дисциплине "{{ selectedSkill }}"</h3>
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Студент</th>
-            <th>Преподаватель</th>
-            <th>Результат</th>
-            <th>Дата</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let res of getResultsForSelectedSkill()">
-            <td>{{ res.studentId }}</td>
-            <td>{{ res.teacherName }}</td>
-            <td>
-              <span
-                class="score"
-                [ngClass]="{
-                  'high-score': res.score >= 75,
-                  'mid-score': res.score >= 50 && res.score < 75,
-                  'low-score': res.score < 50
-                }"
-              >
-                {{ res.score }}%
-              </span>
-            </td>
-            <td>{{ res.resultDate | date : "dd.MM.yyyy" }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="student-placeholder" *ngIf="!selectedSkill">
-      <p>Выберите дисциплину, чтобы увидеть результаты</p>
+<!-- Дисциплины -->
+<div *ngIf="activeTab === 'disciplines'" class="tab-panel">
+  <div class="discipline-list">
+    <div *ngFor="let d of uniqueDisciplines" class="discipline-item card">
+      <span class="name">{{ d }}</span>
+      <span class="avg">Средний: {{ getAverageScoreForDiscipline(d) }}%</span>
     </div>
   </div>
 </div>
