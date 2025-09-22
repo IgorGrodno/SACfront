@@ -75,7 +75,12 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": [
+              "src/styles.css",
+              "src/styles/_variables.scss",
+              "src/styles/_mixins.scss",
+              "src/styles/styles.scss"
+            ]
           }
         }
       }

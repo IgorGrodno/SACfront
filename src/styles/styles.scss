@@ -1,0 +1,41 @@
+@import "./styles/_variables";
+@import "./styles/_mixins";
+
+// Base
+:root {
+  font-family: $font-sans;
+  font-size: $font-size-base;
+  color: $color-text;
+  background: $color-bg;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body,
+html,
+#app-root {
+  height: 100%;
+  margin: 0;
+  background: $color-bg;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 rem(16);
+  font-weight: 600;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: rem(24);
+}
