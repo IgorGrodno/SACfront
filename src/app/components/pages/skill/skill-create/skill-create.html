@@ -1,100 +1,108 @@
-<div class="skill-form"></div>
-<h3>Добавить навык</h3>
-<div class="form-section">
-  <label>
-    Название навыка:
-    <input
-      [(ngModel)]="newSkillName"
-      placeholder="Введите название навыка"
-      class="big-input"
-    />
-  </label>
-  <button class="secondary-button" (click)="saveSkill()">Добавить навык</button>
-</div>
-
-<h3>Добавить/найти шаг</h3>
-<div class="form-section">
-  <label>
-    Название шага:
-    <input
-      [(ngModel)]="newStepName"
-      (ngModelChange)="filterSteps()"
-      placeholder="Введите название шага"
-      class="big-input"
-    />
-  </label>
-
-  <div
-    class="add-step-controls"
-    *ngIf="newStepName.trim() && filteredSteps.length === 0"
-  >
-    <button class="secondary-button" (click)="addStep()">Добавить шаг</button>
-
-    <label class="checkbox-label">
-      <input type="checkbox" [(ngModel)]="newStepPenalty" />
-      Штраф за невыполнение
+<div class="skill-form">
+  <h3>Добавить навык</h3>
+  <div class="form-section">
+    <label>
+      Название навыка:
+      <input
+        [(ngModel)]="newSkillName"
+        placeholder="Введите название навыка"
+        class="big-input"
+      />
     </label>
-  </div>
-</div>
-
-<div class="lists-container">
-  <!-- Шаги навыка -->
-  <div class="step-list">
-    <h3>Шаги навыка</h3>
-    <div
-      cdkDropList
-      id="skillStepsList"
-      [cdkDropListData]="skillSteps"
-      [cdkDropListConnectedTo]="['availableStepsList']"
-      class="dropzone"
-      [style.height.px]="skillListHeight"
-      (cdkDropListDropped)="drop($event)"
+    <button
+      class="secondary-button"
+      (click)="saveSkill()"
+      [disabled]="!newSkillName.trim() || skillSteps.length === 0"
     >
-      <div
-        #skillStepRef
-        class="step-item"
-        *ngFor="let step of skillSteps"
-        cdkDrag
-      >
-        <span [ngClass]="{ 'mistake-step': step.mistakePossible }">{{
-          step.name
-        }}</span>
-      </div>
+      Добавить навык
+    </button>
+  </div>
+
+  <h3>Добавить/найти шаг</h3>
+  <div class="form-section">
+    <label>
+      Название шага:
+      <input
+        [(ngModel)]="newStepName"
+        (ngModelChange)="filterSteps()"
+        placeholder="Введите название шага"
+        class="big-input"
+      />
+    </label>
+
+    <div
+      class="add-step-controls"
+      *ngIf="newStepName.trim() && filteredSteps.length === 0"
+    >
+      <button class="secondary-button" (click)="addStep()">Добавить шаг</button>
+
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="newStepPenalty" />
+        Штраф за невыполнение
+      </label>
     </div>
   </div>
 
-  <!-- Доступные шаги -->
-  <div class="step-list">
-    <h3>Доступные шаги</h3>
-    <div
-      cdkDropList
-      id="availableStepsList"
-      [cdkDropListData]="filteredSteps"
-      [cdkDropListConnectedTo]="['skillStepsList']"
-      class="dropzone"
-      [style.height.px]="availableListHeight"
-      (cdkDropListDropped)="drop($event)"
-    >
+  <div class="lists-container">
+    <!-- Шаги навыка -->
+    <div class="step-list">
+      <h3>Шаги навыка</h3>
       <div
-        #availableStepRef
-        class="step-item"
-        *ngFor="let step of filteredSteps"
-        cdkDrag
+        cdkDropList
+        id="skillStepsList"
+        [cdkDropListData]="skillSteps"
+        [cdkDropListConnectedTo]="['availableStepsList']"
+        class="dropzone"
+        [style.height.px]="skillListHeight"
+        (cdkDropListDropped)="drop($event)"
       >
-        <span
-          class="step-name"
-          [ngClass]="{ 'mistake-step': step.mistakePossible }"
-          >{{ step.name }}</span
+        <div
+          #skillStepRef
+          class="step-item"
+          *ngFor="let step of skillSteps"
+          cdkDrag
         >
-        <button
-          *ngIf="step.canDelete"
-          type="button"
-          class="remove-btn"
-          aria-label="Удалить шаг"
-          (click)="$event.stopPropagation(); removeStep(step.id)"
+          <span [ngClass]="{ 'mistake-step': step.mistakePossible }">
+            {{ step.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Доступные шаги -->
+    <div class="step-list">
+      <h3>Доступные шаги</h3>
+      <div
+        cdkDropList
+        id="availableStepsList"
+        [cdkDropListData]="filteredSteps"
+        [cdkDropListConnectedTo]="['skillStepsList']"
+        class="dropzone"
+        [style.height.px]="availableListHeight"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div
+          #availableStepRef
+          class="step-item"
+          *ngFor="let step of filteredSteps"
+          cdkDrag
         >
-          ✖
-        </button>
+          <span
+            class="step-name"
+            [ngClass]="{ 'mistake-step': step.mistakePossible }"
+          >
+            {{ step.name }}
+          </span>
+          <button
+            *ngIf="step.canDelete"
+            type="button"
+            class="remove-btn"
+            aria-label="Удалить шаг"
+            (click)="$event.stopPropagation(); removeStep(step.id)"
+          >
+            ✖
+          </button>
+        </div>
       </div>
     </div>
   </div>

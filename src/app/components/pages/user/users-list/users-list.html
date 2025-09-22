@@ -3,9 +3,7 @@
     <tr>
       <th>ID</th>
       <th>Username</th>
-      <th>Администратор</th>
-      <th>Экзаменатор</th>
-      <th>Студент</th>
+      <th *ngFor="let role of allRoles">{{ role.replace("ROLE_", "") }}</th>
       <th>Действия</th>
     </tr>
   </thead>
@@ -13,29 +11,22 @@
     <tr *ngFor="let user of users">
       <td>{{ user.id }}</td>
       <td>{{ user.username }}</td>
-      <td>
+
+      <td *ngFor="let role of allRoles">
         <input
           type="checkbox"
-          [checked]="hasRole(user, 'ROLE_ADMIN')"
-          (change)="toggleRole(user, 'ROLE_ADMIN')"
+          [checked]="hasRole(user, role)"
+          (change)="toggleRole(user, role)"
         />
       </td>
-      <td>
-        <input
-          type="checkbox"
-          [checked]="hasRole(user, 'ROLE_TEACHER')"
-          (change)="toggleRole(user, 'ROLE_TEACHER')"
-        />
-      </td>
-      <td>
-        <input
-          type="checkbox"
-          [checked]="hasRole(user, 'ROLE_STUDENT')"
-          (change)="toggleRole(user, 'ROLE_STUDENT')"
-        />
-      </td>
+
       <td class="actions">
-        <button (click)="saveChanges(user)">Сохранить</button>
+        <button
+          [disabled]="!changedUsers.has(user.id)"
+          (click)="saveChanges(user)"
+        >
+          Сохранить
+        </button>
         <button (click)="deleteUser(user.id)">Удалить</button>
         <button (click)="goToProfile(user.id)">Профиль</button>
       </td>

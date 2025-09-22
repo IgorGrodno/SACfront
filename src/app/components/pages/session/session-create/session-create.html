@@ -5,32 +5,36 @@
     Название сессии:
     <input [(ngModel)]="sessionName" name="sessionName" required />
   </label>
-  <br />
+
   <label>
     Дата начала:
     <input type="date" [(ngModel)]="startDate" name="startDate" required />
   </label>
-  <br />
 
   <label>
     Диапазон номеров студентов:
-    <input
-      type="number"
-      [(ngModel)]="studentRangeStart"
-      name="rangeStart"
-      placeholder="от"
-      required
-    />
-
-    <input
-      type="number"
-      [(ngModel)]="studentRangeEnd"
-      name="rangeEnd"
-      placeholder="до"
-      required
-    />
+    <div class="range-inputs">
+      <input
+        type="number"
+        [(ngModel)]="studentRangeStart"
+        name="rangeStart"
+        placeholder="от"
+        required
+      />
+      <input
+        type="number"
+        [(ngModel)]="studentRangeEnd"
+        name="rangeEnd"
+        placeholder="до"
+        required
+      />
+    </div>
   </label>
-  <br />
+
+  <label>
+    <input type="checkbox" [(ngModel)]="active" name="active" />
+    Активная сессия
+  </label>
 
   <button type="submit">Создать</button>
 </form>

@@ -53,7 +53,8 @@
     </select>
   </div>
 
-  <div class="steps-section">
+  <!-- Шаги навыка -->
+  <div class="steps-section" *ngIf="skillSteps.length">
     <h3>Шаги навыка</h3>
     <div *ngFor="let step of skillSteps; let i = index" class="step-item">
       <span>{{ step.name }}</span>
@@ -61,14 +62,12 @@
         <button type="button" (click)="decStep(i)" [disabled]="getStep(i) <= 0">
           −
         </button>
-
         <input
           type="text"
           [value]="getStep(i)"
           (keypress)="onStepKeyPress($event)"
           (blur)="onStepBlur(i, $event)"
         />
-
         <button type="button" (click)="incStep(i)" [disabled]="getStep(i) >= 2">
           +
         </button>
@@ -76,7 +75,7 @@
     </div>
   </div>
 
-  <span>{{ score }} %</span>
+  <div class="score">{{ score }} %</div>
 
   <button (click)="submitExam()" [disabled]="!canSubmit()" class="btn-submit">
     Отправить

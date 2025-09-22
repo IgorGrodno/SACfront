@@ -2,13 +2,17 @@
   width: 100%;
 }
 
-.skill-form {
+.discipline-form {
   width: 100%;
   margin: 0 auto;
   padding: 16px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background: #f9f9f9;
+  background-color: #f9f9f9;
+}
+
+.form-section {
+  margin-bottom: 20px;
 }
 
 label {
@@ -23,16 +27,29 @@ input {
   box-sizing: border-box;
 }
 
+.add-discipline-button {
+  padding: 10px 16px;
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-discipline-button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
 .lists-container {
   display: flex;
-  justify-content: space-between;
   gap: 16px;
   margin-top: 20px;
 }
 
 .step-list {
   flex: 1;
-  background: #fff;
+  background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 12px;
@@ -47,39 +64,25 @@ input {
 }
 
 .step-item {
-  background: #e0e0e0;
-  border-radius: 4px;
-  padding: 6px 10px;
-  margin-bottom: 6px;
-  cursor: move;
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  cursor: grab;
 }
 
 .step-name {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.add-skill-button {
-  margin-top: 20px;
-  padding: 10px 16px;
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-skill-button:hover {
-  background-color: #45a049;
+  word-wrap: break-word;
 }
 
 .remove-btn {
   width: max-content;
   height: max-content;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
 }

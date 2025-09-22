@@ -1,18 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Discipline } from '../../../../interfaces/discipline.interface';
+import { User } from '../../../../interfaces/user.interface';
 import { DisciplineService } from '../../../../services/discipline.service';
 import { AuthService } from '../../../../services/auth.service';
-import { User } from '../../../../interfaces/user.interface';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-discipline-list-exam',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './discipline-list-exam.html',
-  styleUrl: './discipline-list-exam.css',
+  styleUrls: ['./discipline-list-exam.css'], // исправлено
 })
-export class DisciplineListExam {
+export class DisciplineListExam implements OnInit {
   disciplineList: Discipline[] = [];
   currentUser: User | null = null;
 
@@ -22,20 +23,27 @@ export class DisciplineListExam {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.authService.currentUser$.subscribe((user) => {
-      this.currentUser = user;
-      if (this.currentUser) {
-        this.disciplineService
-          .getUserDisciplines(this.currentUser.id)
-          .subscribe((disciplines) => {
-            this.disciplineList = disciplines;
-          });
-      }
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe({
+      next: (user) => {
+        this.currentUser = user;
+        if (this.currentUser) {
+          this.loadUserDisciplines(this.currentUser.id);
+        }
+      },
+      error: (err) => console.error('Ошибка получения пользователя:', err),
     });
   }
 
-  goSkillList(id: number) {
-    this.router.navigate(['/skill-list', id]);
+  private loadUserDisciplines(userId: number): void {
+    this.disciplineService.getUserDisciplines(userId).subscribe({
+      next: (disciplines) => (this.disciplineList = disciplines),
+      error: (err) =>
+        console.error('Ошибка загрузки дисциплин пользователя:', err),
+    });
+  }
+
+  goSkillList(disciplineId: number): void {
+    this.router.navigate(['/skill-list', disciplineId]);
   }
 }

@@ -84,7 +84,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // -------- API --------
-
   private loadSkill(): void {
     const skillIdParam = this.route.snapshot.paramMap.get('id');
     const skillId = skillIdParam ? Number(skillIdParam) : undefined;
@@ -99,7 +98,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
             this.newSkillName = skill.name;
             this.skillSteps = skill.steps ?? [];
             this.triggerHeightUpdate();
-            console.log('Навык загружен:', skill);
           },
           error: (err) => console.error('Ошибка загрузки навыка:', err),
         });
@@ -127,7 +125,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // -------- UI / ACTIONS --------
-
   addStep(): void {
     if (!this.newStepName.trim()) return;
 
@@ -138,7 +135,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
       mistakePossible: this.newStepPenalty,
     };
 
-    // Сброс сразу, чтобы UI обновился
     this.newStepName = '';
     this.newStepPenalty = false;
 
@@ -212,7 +208,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // -------- UI Helpers --------
-
   private triggerHeightUpdate(): void {
     this.ngZone.runOutsideAngular(() => {
       requestAnimationFrame(() => {

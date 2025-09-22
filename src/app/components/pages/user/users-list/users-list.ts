@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 export class UsersList implements OnInit {
   users: User[] = [];
   allRoles: string[] = ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'];
+  changedUsers = new Set<number>();
 
   constructor(private userService: UserService, private router: Router) {}
 
@@ -25,17 +26,26 @@ export class UsersList implements OnInit {
   }
 
   toggleRole(user: User, role: string): void {
-    if (user.roles.includes(role)) {
-      user.roles = user.roles.filter((r) => r !== role);
+    user.roles = user.roles.includes(role)
+      ? user.roles.filter((r) => r !== role)
+      : [...user.roles, role];
+
+    if (this.changedUsers.has(user.id)) {
+      this.changedUsers.delete(user.id);
     } else {
-      user.roles.push(role);
+      this.changedUsers.add(user.id);
     }
   }
 
   saveChanges(user: User): void {
+    if (!this.changedUsers.has(user.id)) return;
+
     this.userService.updateUser(user).subscribe({
-      next: () => alert(`Роли пользователя ${user.username} обновлены.`),
-      error: (err) => alert('Ошибка при обновлении пользователя'),
+      next: () => {
+        alert(`Роли пользователя ${user.username} обновлены.`);
+        this.changedUsers.delete(user.id);
+      },
+      error: () => alert('Ошибка при обновлении пользователя'),
     });
   }
 
@@ -44,15 +54,16 @@ export class UsersList implements OnInit {
   }
 
   deleteUser(userId: number): void {
-    if (confirm('Вы действительно хотите удалить этого пользователя?')) {
-      this.userService.deleteUser(userId).subscribe({
-        next: () => {
-          this.users = this.users.filter((user) => user.id !== userId);
-          console.log(`Пользователь с ID ${userId} удалён.`);
-        },
-        error: (err) => console.error('Ошибка при удалении пользователя:', err),
-      });
-    }
+    if (!confirm('Вы действительно хотите удалить этого пользователя?')) return;
+
+    this.userService.deleteUser(userId).subscribe({
+      next: () => {
+        this.users = this.users.filter((user) => user.id !== userId);
+        this.changedUsers.delete(userId);
+        console.log(`Пользователь с ID ${userId} удалён.`);
+      },
+      error: (err) => console.error('Ошибка при удалении пользователя:', err),
+    });
   }
 
   goToProfile(id: number) {

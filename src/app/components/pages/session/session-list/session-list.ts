@@ -6,10 +6,10 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-session-list',
-  templateUrl: './session-list.html',
-  styleUrls: ['./session-list.css'],
   standalone: true,
   imports: [CommonModule],
+  templateUrl: './session-list.html',
+  styleUrls: ['./session-list.css'],
 })
 export class SessionList implements OnInit {
   sessions: Session[] = [];
@@ -29,35 +29,36 @@ export class SessionList implements OnInit {
 
   deleteSession(sessionId: number): void {
     if (!confirm('Вы уверены, что хотите удалить сессию?')) return;
+
     this.sessionService.deleteSession(sessionId).subscribe({
       next: () => {
-        console.log('Сессия удалена');
         this.sessions = this.sessions.filter((s) => s.id !== sessionId);
+        console.log(`Сессия с ID ${sessionId} удалена`);
       },
       error: (err) => console.error('Ошибка при удалении сессии:', err),
     });
   }
 
-  activateSession(id: number, active: boolean): void {
-    const session = this.sessions.find((s) => s.id === id);
-    if (!session) return;
+  toggleSessionActive(session: Session): void {
+    const action = session.active ? 'Деактивировать' : 'Активировать';
+    if (!confirm(`${action} сессию "${session.name}"?`)) return;
 
-    const action = active ? 'Активировать' : 'Деактивировать';
-    if (!confirm(`${action} сессию с ID ${id}?`)) return;
-
-    this.sessionService.activateSession(id, active).subscribe({
-      next: () => {
-        session.active = active; // обновляем локально
-        console.log(
-          `Сессия с ID ${id} ${active ? 'активирована' : 'деактивирована'}`
-        );
-      },
-      error: (err) => console.error('Ошибка при обновлении сессии:', err),
-    });
+    this.sessionService
+      .activateSession(session.id!, !session.active)
+      .subscribe({
+        next: () => {
+          session.active = !session.active;
+          console.log(
+            `Сессия "${session.name}" ${
+              session.active ? 'активирована' : 'деактивирована'
+            }`
+          );
+        },
+        error: (err) => console.error('Ошибка при обновлении сессии:', err),
+      });
   }
 
   viewSessionDetails(sessionId: number): void {
-    console.log('Navigating to session details for ID:', sessionId);
     this.router.navigate(['/test-result', sessionId]);
   }
 }

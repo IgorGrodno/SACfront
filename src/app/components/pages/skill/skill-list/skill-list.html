@@ -1,14 +1,9 @@
 <div class="skill-container">
-  <!-- Заголовок -->
-  <h2>
-    {{ disciplineId ? "Навыки дисциплины" : "Все навыки" }}
-  </h2>
+  <h2>{{ disciplineId ? "Навыки дисциплины" : "Все навыки" }}</h2>
 
-  <!-- Если нет навыков -->
   <div *ngIf="skills.length === 0" class="empty-message">Навыки не найдены</div>
 
-  <!-- Список навыков -->
-  <ul class="skill-list">
+  <ul class="skill-list" *ngIf="skills.length">
     <li
       *ngFor="let skill of skills"
       class="skill-item"

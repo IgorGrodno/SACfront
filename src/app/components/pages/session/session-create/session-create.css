@@ -1,4 +1,3 @@
-/* Общий контейнер */
 form,
 h2 {
   max-width: 500px;
@@ -14,7 +13,6 @@ h2 {
   color: #1f2937;
 }
 
-/* Метки и инпуты */
 label {
   display: flex;
   flex-direction: column;
@@ -23,13 +21,18 @@ label {
   color: #374151;
 }
 
+.range-inputs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
 input[type="date"],
 input[type="number"] {
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  margin-top: 0.25rem;
   transition: all 0.2s ease;
 }
 
@@ -40,20 +43,12 @@ input[type="number"]:focus {
   outline: none;
 }
 
-/* Диапазон номеров студентов в одну строку */
-label input[type="number"] {
-  width: 100px;
-  margin-right: 0.5rem;
-}
-
-/* Чекбокс */
 input[type="checkbox"] {
   margin-right: 0.5rem;
   transform: scale(1.2);
   cursor: pointer;
 }
 
-/* Кнопка */
 button[type="submit"] {
   display: block;
   width: 100%;
@@ -77,7 +72,6 @@ button[type="submit"]:active {
   transform: translateY(0);
 }
 
-/* Общие отступы */
 br {
   line-height: 1.5rem;
 }

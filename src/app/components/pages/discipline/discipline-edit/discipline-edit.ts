@@ -1,24 +1,24 @@
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
-  CdkDragDrop,
-  DragDropModule,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
   Component,
+  ChangeDetectorRef,
   ElementRef,
   NgZone,
   OnDestroy,
   OnInit,
+  AfterViewInit,
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import {
+  DragDropModule,
+  CdkDragDrop,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
+import { Subject, takeUntil } from 'rxjs';
 
 import { Skill } from '../../../../interfaces/skill.interface';
 import { Discipline } from '../../../../interfaces/discipline.interface';
@@ -50,7 +50,6 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChildren('availableSkillRef')
   availableSkillElements!: QueryList<ElementRef>;
-
   @ViewChildren('disciplineSkillRef')
   disciplineSkillElements!: QueryList<ElementRef>;
 
@@ -61,16 +60,19 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {}
+
+  ngOnInit(): void {
+    this.loadSkills(() => this.loadDisciplineIfEditing());
+  }
+
   ngAfterViewInit(): void {
     this.availableSkillElements.changes
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.triggerHeightUpdate());
-
     this.disciplineSkillElements.changes
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.triggerHeightUpdate());
-
-    this.triggerHeightUpdate(); // сразу после рендера
+    this.triggerHeightUpdate();
   }
 
   ngOnDestroy(): void {
@@ -78,23 +80,16 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  ngOnInit(): void {
-    // 1. Загружаем все навыки
-    this.loadSkills(() => {
-      // 2. После загрузки навыков — если редактируем дисциплину, подгружаем её
-      this.loadDisciplineIfEditing();
-    });
-  }
-
+  // ----------------- API -----------------
   private loadSkills(callback?: () => void): void {
     this.skillService
       .getSkills()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          this.allSkills = data;
-          this.updateAvailableSkills(); // пока дисциплина не загружена, сюда попадут все навыки
-          callback?.(); // если есть коллбек, вызываем
+        next: (skills) => {
+          this.allSkills = skills;
+          this.updateAvailableSkills();
+          callback?.();
         },
         error: (err) => console.error('Ошибка загрузки навыков:', err),
       });
@@ -106,16 +101,16 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
       ? Number(disciplineIdParam)
       : undefined;
 
-    if (typeof disciplineId === 'number' && !isNaN(disciplineId)) {
+    if (disciplineId && !isNaN(disciplineId)) {
       this.disciplineService
         .getDiscipline(disciplineId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (discipline) => {
             this.discipline = discipline;
-            this.newDisciplineName = discipline.name; // имя в input
-            this.disciplineSkills = discipline.skills ?? []; // выбранные навыки
-            this.updateAvailableSkills(); // пересобираем доступные навыки
+            this.newDisciplineName = discipline.name;
+            this.disciplineSkills = discipline.skills ?? [];
+            this.updateAvailableSkills();
             this.triggerHeightUpdate();
           },
           error: (err) => console.error('Ошибка загрузки дисциплины:', err),
@@ -124,15 +119,14 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateAvailableSkills(): void {
-    const selectedSkillIds = new Set(this.disciplineSkills.map((s) => s.id));
+    const selectedIds = new Set(this.disciplineSkills.map((s) => s.id));
     this.availableSkillsForDiscipline = this.allSkills.filter(
-      (s) => !selectedSkillIds.has(s.id)
+      (s) => !selectedIds.has(s.id)
     );
     this.triggerHeightUpdate();
   }
 
-  // -------- UI / ACTIONS --------
-
+  // ----------------- UI Actions -----------------
   dropSkill(event: CdkDragDrop<Skill[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(
@@ -152,25 +146,24 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveDiscipline(): void {
-    if (!this.newDisciplineName.trim() || this.disciplineSkills.length === 0) {
+    if (!this.newDisciplineName.trim() || this.disciplineSkills.length === 0)
       return;
-    }
 
-    const newDiscipline: Discipline = {
+    const disciplineToSave: Discipline = {
       id: this.discipline?.id ?? -1,
       name: this.newDisciplineName.trim(),
       skills: this.disciplineSkills,
     };
 
     const save$ = this.discipline?.id
-      ? this.disciplineService.updateDiscipline(newDiscipline.id, newDiscipline)
-      : this.disciplineService.createDiscipline(newDiscipline);
+      ? this.disciplineService.updateDiscipline(
+          disciplineToSave.id,
+          disciplineToSave
+        )
+      : this.disciplineService.createDiscipline(disciplineToSave);
 
     save$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        console.log('Дисциплина сохранена');
-        this.loadSkills(() => this.loadDisciplineIfEditing());
-      },
+      next: () => this.loadSkills(() => this.loadDisciplineIfEditing()),
       error: (err) => console.error('Ошибка при сохранении дисциплины:', err),
     });
   }
@@ -190,8 +183,7 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  // -------- UI Helpers --------
-
+  // ----------------- Helpers -----------------
   private triggerHeightUpdate(): void {
     this.ngZone.runOutsideAngular(() => {
       requestAnimationFrame(() => {
@@ -228,9 +220,9 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
     if (!elements?.length) return 0;
     return elements.toArray().reduce((total, el) => {
       const native = el.nativeElement as HTMLElement;
-      const style = window.getComputedStyle(native);
-      const marginBottom = parseFloat(style.marginBottom || '0') || 0;
-      return total + (native.offsetHeight || 0) + marginBottom;
+      const margin =
+        parseFloat(window.getComputedStyle(native).marginBottom || '0') || 0;
+      return total + (native.offsetHeight || 0) + margin;
     }, 12);
   }
 }

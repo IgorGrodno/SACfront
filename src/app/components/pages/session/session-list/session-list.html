@@ -3,7 +3,7 @@
 <table class="session-table">
   <thead>
     <tr>
-      <th>ID</th>
+      <th>Название</th>
       <th>Дата начала</th>
       <th>Дата окончания</th>
       <th>Активна</th>
@@ -23,24 +23,13 @@
         <input type="checkbox" [checked]="session.active" disabled />
       </td>
       <td>{{ session.studentNumbers.length }}</td>
-      <td>
-        {{ session.studentNumbers.join(", ") }}
-      </td>
+      <td>{{ session.studentNumbers.join(", ") }}</td>
       <td>
         <button
-          *ngIf="!session.active"
-          class="activate"
-          (click)="activateSession(session.id!, true)"
+          (click)="toggleSessionActive(session)"
+          [ngClass]="session.active ? 'deactivate' : 'activate'"
         >
-          Активировать
-        </button>
-
-        <button
-          *ngIf="session.active"
-          class="deactivate"
-          (click)="activateSession(session.id!, false)"
-        >
-          Деактивировать
+          {{ session.active ? "Деактивировать" : "Активировать" }}
         </button>
         <button class="view-details" (click)="viewSessionDetails(session.id!)">
           Подробнее

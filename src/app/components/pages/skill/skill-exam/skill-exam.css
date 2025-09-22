@@ -28,7 +28,8 @@
   color: #374151;
 }
 
-select {
+select,
+.form-control {
   padding: 0.6rem;
   border: 1px solid #d1d5db;
   border-radius: 12px;
@@ -36,7 +37,8 @@ select {
   transition: all 0.2s ease;
 }
 
-select:focus {
+select:focus,
+.form-control:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
   outline: none;
@@ -47,10 +49,8 @@ select:focus {
   color: #4b5563;
 }
 
-/* Шаги навыка */
 .steps-section h3 {
-  margin-top: 1.75rem;
-  margin-bottom: 1rem;
+  margin: 1.75rem 0 1rem;
   font-size: 1.4rem;
   font-weight: 600;
   color: #1e40af;
@@ -81,11 +81,10 @@ select:focus {
 .number-input {
   display: flex;
   align-items: center;
+  width: 18%;
+  border: 1px solid #d1d5db;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #d1d5db;
-  flex-wrap: nowrap;
-  width: 18%;
 }
 
 .number-input input {
@@ -102,13 +101,13 @@ select:focus {
   height: 40px;
   font-size: 1.3rem;
   font-weight: bold;
-  background: #e5e7eb;
   border: none;
+  background: #e5e7eb;
   cursor: pointer;
-  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: 0.15s ease;
 }
 
 .number-input button:hover {
@@ -125,18 +124,25 @@ select:focus {
   filter: grayscale(0.3);
 }
 
-/* Кнопка отправки */
+.score {
+  font-weight: 600;
+  margin-top: 1rem;
+  text-align: right;
+  font-size: 1.2rem;
+  color: #1e40af;
+}
+
 .btn-submit {
   margin-top: 2rem;
   width: 100%;
   padding: 0.9rem;
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
-  color: white;
   font-size: 1.15rem;
   font-weight: 700;
   border: none;
   border-radius: 16px;
   cursor: pointer;
+  color: #fff;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
   transition: all 0.25s ease;
 }
 

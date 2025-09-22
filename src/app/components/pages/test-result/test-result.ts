@@ -51,7 +51,7 @@ export class TestResult implements OnInit {
   uniqueSkills: string[] = [];
   uniqueDisciplines: string[] = [];
 
-  filterForm!: FormGroup;
+  filterForm: FormGroup;
   minStudentId = 0;
   maxStudentId = 0;
 
@@ -77,9 +77,12 @@ export class TestResult implements OnInit {
       },
       { validators: this.rangeValidator }
     );
+
+    this.filterForm.valueChanges.subscribe(() =>
+      this.recalculateUniqueValues()
+    );
   }
 
-  /** Валидатор диапазона: "to" ≥ "from" */
   private rangeValidator(group: FormGroup) {
     const from = Number(group.get('from')?.value);
     const to = Number(group.get('to')?.value);
@@ -88,17 +91,12 @@ export class TestResult implements OnInit {
 
   ngOnInit(): void {
     this.loadResults();
-
-    // 🔥 Подписка на изменение диапазона студентов
-    this.filterForm.valueChanges.subscribe(() => {
-      this.recalculateUniqueValues();
-    });
   }
 
   private loadResults(): void {
     this.isLoading = true;
-
     this.sessionId = this.route.snapshot.paramMap.get('id') ?? undefined;
+
     const request$ = this.sessionId
       ? this.resultsService.getBySessionId(Number(this.sessionId))
       : this.resultsService.getAll();
@@ -154,9 +152,9 @@ export class TestResult implements OnInit {
       );
 
       const skillToDisciplineMap = new Map<number, string>();
-      disciplines.forEach((d) => {
-        d.skills?.forEach((s) => skillToDisciplineMap.set(s.id, d.name));
-      });
+      disciplines.forEach((d) =>
+        d.skills?.forEach((s) => skillToDisciplineMap.set(s.id, d.name))
+      );
 
       this.results = data
         .map((r) => {
@@ -178,7 +176,6 @@ export class TestResult implements OnInit {
         })
         .sort((a, b) => b.resultDate.getTime() - a.resultDate.getTime());
 
-      // Установим min/max для фильтра
       const allStudents = [
         ...new Set(this.results.map((r) => r.studentId)),
       ].sort((a, b) => a - b);
@@ -189,7 +186,7 @@ export class TestResult implements OnInit {
         to: this.maxStudentId,
       });
 
-      this.recalculateUniqueValues(); // ✅ пересчёт после загрузки
+      this.recalculateUniqueValues();
     } catch (e) {
       console.error('Ошибка при загрузке связанных данных', e);
       this.resetResults();
@@ -198,7 +195,6 @@ export class TestResult implements OnInit {
     }
   }
 
-  /** 🔥 Пересчёт уникальных значений для всех вкладок */
   private recalculateUniqueValues(): void {
     const filtered = this.filteredResults;
 
@@ -228,9 +224,8 @@ export class TestResult implements OnInit {
 
   private calculateScore(stepScores: StepScoreEntry[]): number {
     if (!stepScores?.length) return 0;
-    const maxPossible = stepScores.length * 2;
     const total = stepScores.reduce((sum, entry) => sum + entry.score, 0);
-    return Math.round((Math.max(total, 0) / maxPossible) * 100);
+    return Math.round((Math.max(total, 0) / (stepScores.length * 2)) * 100);
   }
 
   setActiveTab(tab: 'all' | 'students' | 'skills' | 'disciplines'): void {
@@ -239,7 +234,6 @@ export class TestResult implements OnInit {
     this.selectedDiscipline = undefined;
   }
 
-  /** Оценка студента по конкретному навыку */
   getScoreForStudentSkill(studentId: number, skillName: string): number | null {
     const result = this.filteredResults.find(
       (r) => r.studentId === studentId && r.skillName === skillName
@@ -308,7 +302,6 @@ export class TestResult implements OnInit {
   }
 
   preventNonNumeric(event: KeyboardEvent): void {
-    // Разрешаем цифры, backspace, delete, стрелки
     const allowedKeys = [
       'Backspace',
       'Delete',
@@ -316,8 +309,7 @@ export class TestResult implements OnInit {
       'ArrowRight',
       'Tab',
     ];
-    if (!/[0-9]/.test(event.key) && !allowedKeys.includes(event.key)) {
+    if (!/[0-9]/.test(event.key) && !allowedKeys.includes(event.key))
       event.preventDefault();
-    }
   }
 }

@@ -81,7 +81,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ----------------- API -----------------
-
   private loadSteps(): void {
     this.stepService
       .getAllSteps()
@@ -111,6 +110,7 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: () => {
           this.newStepPenalty = false;
+          this.newStepName = '';
           this.loadSteps();
         },
         error: (err) => console.error('Ошибка добавления шага:', err),
@@ -155,7 +155,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ----------------- UI -----------------
-
   drop(event: CdkDragDrop<SkillStep[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(

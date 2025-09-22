@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Discipline } from '../../../../interfaces/discipline.interface';
 import { DisciplineService } from '../../../../services/discipline.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-discipline-list',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './discipline-list.html',
-  styleUrl: './discipline-list.css',
+  styleUrls: ['./discipline-list.css'], // исправлено с styleUrl
 })
 export class DisciplineList implements OnInit {
   disciplines: Discipline[] = [];
@@ -19,14 +19,18 @@ export class DisciplineList implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.loadDisciplines();
+  }
+
+  private loadDisciplines(): void {
     this.disciplineService.getDisciplines().subscribe({
       next: (data) => (this.disciplines = data),
       error: (err) => console.error('Ошибка загрузки дисциплин:', err),
     });
   }
 
-  goDisciplineEdit(id: number) {
+  goDisciplineEdit(id: number): void {
     this.router.navigate(['/discipline-edit', id]);
   }
 

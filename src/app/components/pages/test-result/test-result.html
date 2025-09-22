@@ -1,10 +1,10 @@
+<!-- Фильтр по диапазону студентов -->
 <form [formGroup]="filterForm" class="filter-form global-filter">
   <label>
     Студент от:
     <input
       type="number"
       formControlName="from"
-      inputmode="numeric"
       (keydown)="preventNonNumeric($event)"
     />
   </label>
@@ -13,7 +13,6 @@
     <input
       type="number"
       formControlName="to"
-      inputmode="numeric"
       (keydown)="preventNonNumeric($event)"
     />
   </label>
@@ -22,32 +21,20 @@
     Значение "до" должно быть больше или равно "от"
   </div>
 
-  <div
-    class="error-messages"
-    *ngIf="filterForm.get('from')?.invalid && filterForm.get('from')?.touched"
-  >
-    <span *ngIf="filterForm.get('from')?.errors?.['required']"
-      >Обязательное поле</span
+  <div class="error-messages" *ngFor="let field of ['from', 'to']">
+    <ng-container
+      *ngIf="filterForm.get(field)?.invalid && filterForm.get(field)?.touched"
     >
-    <span *ngIf="filterForm.get('from')?.errors?.['min']"
-      >Минимальное значение 1</span
-    >
-    <span *ngIf="filterForm.get('from')?.errors?.['pattern']"
-      >Только цифры</span
-    >
-  </div>
-
-  <div
-    class="error-messages"
-    *ngIf="filterForm.get('to')?.invalid && filterForm.get('to')?.touched"
-  >
-    <span *ngIf="filterForm.get('to')?.errors?.['required']"
-      >Обязательное поле</span
-    >
-    <span *ngIf="filterForm.get('to')?.errors?.['min']"
-      >Минимальное значение 1</span
-    >
-    <span *ngIf="filterForm.get('to')?.errors?.['pattern']">Только цифры</span>
+      <span *ngIf="filterForm.get(field)?.errors?.['required']"
+        >Обязательное поле</span
+      >
+      <span *ngIf="filterForm.get(field)?.errors?.['min']"
+        >Минимальное значение 1</span
+      >
+      <span *ngIf="filterForm.get(field)?.errors?.['pattern']"
+        >Только цифры</span
+      >
+    </ng-container>
   </div>
 </form>
 
@@ -76,39 +63,41 @@
   </button>
 </div>
 
-<!-- Вкладка "Все результаты" -->
-<div id="all-tab" *ngIf="activeTab === 'all'" class="tab-panel">
-  <table *ngIf="!isLoading && filteredResults.length" class="results-table">
-    <thead>
-      <tr>
-        <th (click)="sortBy('sessionName')" *ngIf="!sessionId">Сессия</th>
-        <th (click)="sortBy('disciplineName')">Дисциплина</th>
-        <th (click)="sortBy('skillName')">Навык</th>
-        <th (click)="sortBy('studentId')">Студент</th>
-        <th (click)="sortBy('teacherName')">Преподаватель</th>
-        <th (click)="sortBy('score')">Результат</th>
-        <th (click)="sortBy('resultDate')">Дата</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let r of filteredResults">
-        <td *ngIf="!sessionId">{{ r.sessionName }}</td>
-        <td>{{ r.disciplineName }}</td>
-        <td>{{ r.skillName }}</td>
-        <td>{{ r.studentId }}</td>
-        <td>{{ r.teacherName }}</td>
-        <td>{{ r.score }}%</td>
-        <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
-      </tr>
-    </tbody>
-  </table>
-  <div *ngIf="!isLoading && filteredResults.length === 0" class="empty">
-    Нет результатов
-  </div>
+<!-- Вкладки контент -->
+<div class="tab-panel" *ngIf="activeTab === 'all'">
+  <ng-container *ngIf="!isLoading && filteredResults.length; else noResults">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th *ngIf="!sessionId" (click)="sortBy('sessionName')">Сессия</th>
+          <th (click)="sortBy('disciplineName')">Дисциплина</th>
+          <th (click)="sortBy('skillName')">Навык</th>
+          <th (click)="sortBy('studentId')">Студент</th>
+          <th (click)="sortBy('teacherName')">Преподаватель</th>
+          <th (click)="sortBy('score')">Результат</th>
+          <th (click)="sortBy('resultDate')">Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filteredResults">
+          <td *ngIf="!sessionId">{{ r.sessionName }}</td>
+          <td>{{ r.disciplineName }}</td>
+          <td>{{ r.skillName }}</td>
+          <td>{{ r.studentId }}</td>
+          <td>{{ r.teacherName }}</td>
+          <td>{{ r.score }}%</td>
+          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-template #noResults>
+    <div class="empty">Нет результатов</div>
+  </ng-template>
 </div>
 
-<!-- Вкладка "Студенты" -->
-<div *ngIf="activeTab === 'students'" class="tab-panel">
+<!-- Студенты -->
+<div class="tab-panel" *ngIf="activeTab === 'students'">
   <div class="card">
     <h3>Сравнительная таблица студентов</h3>
     <table class="results-table">
@@ -134,12 +123,12 @@
   </div>
 </div>
 
-<!-- Вкладка "Навыки" -->
-<div *ngIf="activeTab === 'skills'" class="tab-panel">
-  <div class="skill-list">
+<!-- Навыки -->
+<div class="tab-panel" *ngIf="activeTab === 'skills'">
+  <div class="item-list">
     <div
       *ngFor="let skill of uniqueSkills"
-      class="skill-item card"
+      class="item-card"
       [class.active]="selectedSkill === skill"
       (click)="selectedSkill = skill"
     >
@@ -169,10 +158,10 @@
   </div>
 </div>
 
-<!-- Вкладка "Дисциплины" -->
-<div *ngIf="activeTab === 'disciplines'" class="tab-panel">
-  <div class="discipline-list">
-    <div *ngFor="let d of uniqueDisciplines" class="discipline-item card">
+<!-- Дисциплины -->
+<div class="tab-panel" *ngIf="activeTab === 'disciplines'">
+  <div class="item-list">
+    <div *ngFor="let d of uniqueDisciplines" class="item-card">
       <span class="name">{{ d }}</span>
       <span class="avg">Средний: {{ getAverageScoreForDiscipline(d) }}%</span>
     </div>

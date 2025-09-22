@@ -18,7 +18,6 @@ h2 {
 
 .profile-form {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 15px;
   margin-bottom: 20px;
 }
@@ -74,12 +73,12 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 50px; /* ✅ добавили минимальную высоту */
-  border: 2px dashed transparent; /* для визуальной подсказки */
+  min-height: 50px;
+  border: 2px dashed transparent;
 }
 
 .drop-list.cdk-drop-list-dragging {
-  border-color: #007bff; /* подсветка при перетаскивании */
+  border-color: #007bff;
   background: #f1f7ff;
 }
 
@@ -102,7 +101,6 @@ h2 {
   border-color: #007bff;
 }
 
-/* ✅ Стили для перетаскивания */
 .cdk-drag-preview {
   box-sizing: border-box;
   border-radius: 10px;

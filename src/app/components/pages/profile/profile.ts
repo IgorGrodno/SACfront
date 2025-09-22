@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -7,12 +8,10 @@ import {
   QueryList,
   ViewChild,
   ViewChildren,
-  AfterViewInit,
   OnInit,
 } from '@angular/core';
-import { AuthService } from '../../../services/auth.service';
-import { ProfileService } from '../../../services/profile.service';
-import { Profile } from '../../../interfaces/profile.interface';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
   CdkDragDrop,
@@ -21,10 +20,12 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { switchMap, forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
+
+import { AuthService } from '../../../services/auth.service';
+import { ProfileService } from '../../../services/profile.service';
 import { DisciplineService } from '../../../services/discipline.service';
+import { Profile } from '../../../interfaces/profile.interface';
 import { Discipline } from '../../../interfaces/discipline.interface';
 
 @Component({
@@ -32,16 +33,16 @@ import { Discipline } from '../../../interfaces/discipline.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './profile.html',
-  styleUrls: ['./profile.css'], // ✅ styleUrls (plural!) – Angular требует массив
+  styleUrls: ['./profile.css'],
 })
 export class ProfilePage implements OnInit, AfterViewInit {
   @Input() userId!: number;
   userProfile?: Profile;
-  isAdmin: boolean = false;
+  isAdmin = false;
 
-  firstName: string = '';
-  secondName: string = '';
-  fatherName: string = '';
+  firstName = '';
+  secondName = '';
+  fatherName = '';
 
   availableDisciplines: Discipline[] = [];
   userDisciplines: Discipline[] = [];
@@ -64,13 +65,14 @@ export class ProfilePage implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.isAdmin = this.authService.hasRole('ROLE_ADMIN');
+
     this.route.params
       .pipe(
         switchMap((params) => {
           this.userId =
-            (+params['id'] || this.authService.getCurrentUser()?.id) ?? 0;
+            +params['id'] || this.authService.getCurrentUser()?.id || 0;
           return this.profileService.getProfile(this.userId);
         }),
         switchMap((profile) => {
@@ -78,6 +80,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
           this.firstName = profile.firstName || '';
           this.secondName = profile.secondName || '';
           this.fatherName = profile.fatherName || '';
+
           return forkJoin({
             userDisciplines: this.disciplineService.getUserDisciplines(
               profile.id
@@ -86,33 +89,32 @@ export class ProfilePage implements OnInit, AfterViewInit {
           });
         })
       )
-      .subscribe(({ userDisciplines, availableDisciplines }) => {
-        this.userDisciplines = userDisciplines;
-        this.availableDisciplines = availableDisciplines.filter(
-          (discipline) => !userDisciplines.some((s) => s.id === discipline.id)
-        );
+      .subscribe({
+        next: ({ userDisciplines, availableDisciplines }) => {
+          this.userDisciplines = userDisciplines;
+          this.availableDisciplines = availableDisciplines.filter(
+            (d) => !userDisciplines.some((ud) => ud.id === d.id)
+          );
+        },
+        error: (err) =>
+          console.error('Ошибка загрузки профиля или дисциплин', err),
       });
   }
 
   ngAfterViewInit(): void {
-    // ✅ откладываем связывание на следующий tick, чтобы оба списка точно были созданы
     setTimeout(() => {
       if (this.availableList && this.userList) {
         this.availableList.connectedTo = [this.userList];
         this.userList.connectedTo = [this.availableList];
       }
 
-      this.availableSkillElements.changes.subscribe(() =>
-        this.triggerHeightUpdate()
-      );
-      this.userSkillElements.changes.subscribe(() =>
-        this.triggerHeightUpdate()
-      );
-      this.triggerHeightUpdate();
+      this.availableSkillElements.changes.subscribe(() => this.updateHeights());
+      this.userSkillElements.changes.subscribe(() => this.updateHeights());
+      this.updateHeights();
     });
   }
 
-  private triggerHeightUpdate(): void {
+  private updateHeights(): void {
     setTimeout(() => {
       this.availableSkillsListHeight = this.calculateTotalHeight(
         this.availableSkillElements
@@ -125,14 +127,14 @@ export class ProfilePage implements OnInit, AfterViewInit {
   }
 
   private calculateTotalHeight(elements: QueryList<ElementRef>): number {
-    let total = 120;
-    elements.forEach((el) => {
-      total += el.nativeElement.offsetHeight || 0;
-    });
-    return total;
+    const baseHeight = 120;
+    return elements.reduce(
+      (total, el) => total + (el.nativeElement.offsetHeight || 0),
+      baseHeight
+    );
   }
 
-  drop(event: CdkDragDrop<Discipline[]>) {
+  drop(event: CdkDragDrop<Discipline[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -147,11 +149,12 @@ export class ProfilePage implements OnInit, AfterViewInit {
         event.currentIndex
       );
     }
-    this.triggerHeightUpdate();
+    this.updateHeights();
   }
 
-  saveProfile() {
+  saveProfile(): void {
     if (!this.userProfile) return;
+
     this.userProfile.firstName = this.firstName.trim();
     this.userProfile.secondName = this.secondName.trim();
     this.userProfile.fatherName = this.fatherName.trim();
@@ -163,9 +166,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
           this.userProfile = updatedProfile;
           console.log('Профиль успешно обновлён', updatedProfile);
         },
-        error: (err) => {
-          console.error('Ошибка при обновлении профиля', err);
-        },
+        error: (err) => console.error('Ошибка при обновлении профиля', err),
       });
   }
 }
