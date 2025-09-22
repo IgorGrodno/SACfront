@@ -1,3 +1,57 @@
+<form [formGroup]="filterForm" class="filter-form global-filter">
+  <label>
+    Студент от:
+    <input
+      type="number"
+      formControlName="from"
+      inputmode="numeric"
+      (keydown)="preventNonNumeric($event)"
+    />
+  </label>
+  <label>
+    до:
+    <input
+      type="number"
+      formControlName="to"
+      inputmode="numeric"
+      (keydown)="preventNonNumeric($event)"
+    />
+  </label>
+
+  <div class="error-messages" *ngIf="filterForm.errors?.['rangeInvalid']">
+    Значение "до" должно быть больше или равно "от"
+  </div>
+
+  <div
+    class="error-messages"
+    *ngIf="filterForm.get('from')?.invalid && filterForm.get('from')?.touched"
+  >
+    <span *ngIf="filterForm.get('from')?.errors?.['required']"
+      >Обязательное поле</span
+    >
+    <span *ngIf="filterForm.get('from')?.errors?.['min']"
+      >Минимальное значение 1</span
+    >
+    <span *ngIf="filterForm.get('from')?.errors?.['pattern']"
+      >Только цифры</span
+    >
+  </div>
+
+  <div
+    class="error-messages"
+    *ngIf="filterForm.get('to')?.invalid && filterForm.get('to')?.touched"
+  >
+    <span *ngIf="filterForm.get('to')?.errors?.['required']"
+      >Обязательное поле</span
+    >
+    <span *ngIf="filterForm.get('to')?.errors?.['min']"
+      >Минимальное значение 1</span
+    >
+    <span *ngIf="filterForm.get('to')?.errors?.['pattern']">Только цифры</span>
+  </div>
+</form>
+
+<!-- Вкладки -->
 <div class="tabs">
   <button [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
     Все
@@ -22,13 +76,8 @@
   </button>
 </div>
 
-<!-- Все результаты -->
+<!-- Вкладка "Все результаты" -->
 <div id="all-tab" *ngIf="activeTab === 'all'" class="tab-panel">
-  <form [formGroup]="filterForm" class="filter-form">
-    <label>Студент от: <input type="number" formControlName="from" /></label>
-    <label>до: <input type="number" formControlName="to" /></label>
-  </form>
-
   <table *ngIf="!isLoading && filteredResults.length" class="results-table">
     <thead>
       <tr>
@@ -58,55 +107,50 @@
   </div>
 </div>
 
-<!-- Студенты -->
+<!-- Вкладка "Студенты" -->
 <div *ngIf="activeTab === 'students'" class="tab-panel">
-  <div class="student-list">
-    <button
-      *ngFor="let s of uniqueStudents"
-      (click)="selectedStudentId = s"
-      [class.active]="selectedStudentId === s"
-    >
-      {{ s }}
-    </button>
-  </div>
-  <div *ngIf="selectedStudentId" class="card">
-    <h3>Результаты студента {{ selectedStudentId }}</h3>
-    <table>
+  <div class="card">
+    <h3>Сравнительная таблица студентов</h3>
+    <table class="results-table">
       <thead>
         <tr>
-          <th>Дисциплина</th>
           <th>Навык</th>
-          <th>Результат</th>
-          <th>Дата</th>
+          <th *ngFor="let s of filteredStudents">{{ s }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let r of getResultsForSelectedStudent()">
-          <td>{{ r.disciplineName }}</td>
-          <td>{{ r.skillName }}</td>
-          <td>{{ r.score }}%</td>
-          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
+        <tr *ngFor="let skill of uniqueSkills">
+          <td class="skill-name">{{ skill }}</td>
+          <td *ngFor="let s of filteredStudents">
+            {{
+              getScoreForStudentSkill(s, skill) !== null
+                ? getScoreForStudentSkill(s, skill) + "%"
+                : "-"
+            }}
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- Навыки -->
+<!-- Вкладка "Навыки" -->
 <div *ngIf="activeTab === 'skills'" class="tab-panel">
   <div class="skill-list">
-    <div *ngFor="let skill of uniqueSkills" class="skill-item">
-      <span
-        (click)="selectedSkill = skill"
-        [class.active]="selectedSkill === skill"
-        >{{ skill }}</span
-      >
+    <div
+      *ngFor="let skill of uniqueSkills"
+      class="skill-item card"
+      [class.active]="selectedSkill === skill"
+      (click)="selectedSkill = skill"
+    >
+      <span class="name">{{ skill }}</span>
       <span class="avg">Средний: {{ getAverageScoreForSkill(skill) }}%</span>
     </div>
   </div>
+
   <div *ngIf="selectedSkill" class="card">
     <h3>Результаты по навыку {{ selectedSkill }}</h3>
-    <table>
+    <table class="results-table">
       <thead>
         <tr>
           <th>Студент</th>
@@ -125,7 +169,7 @@
   </div>
 </div>
 
-<!-- Дисциплины -->
+<!-- Вкладка "Дисциплины" -->
 <div *ngIf="activeTab === 'disciplines'" class="tab-panel">
   <div class="discipline-list">
     <div *ngFor="let d of uniqueDisciplines" class="discipline-item card">

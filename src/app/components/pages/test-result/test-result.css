@@ -135,3 +135,44 @@
     transform: translateY(0);
   }
 }
+
+.skill-item.card {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.skill-item.card:hover {
+  background: #f5f5f5;
+}
+
+.skill-item.card.active {
+  background: #e6f0ff; /* светло-синий фон */
+  color: #003366; /* тёмно-синий текст */
+  border: 1px solid #99c2ff;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
+}
+
+.results-table td,
+.results-table th {
+  text-align: center;
+}
+
+.skill-name {
+  text-align: left;
+  font-weight: 600;
+  background: #f7f7f7;
+}
+
+.global-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.global-filter label {
+  font-weight: 500;
+}

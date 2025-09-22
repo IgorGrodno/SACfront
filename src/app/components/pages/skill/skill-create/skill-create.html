@@ -24,13 +24,17 @@
     />
   </label>
 
-  <button
-    class="secondary-button"
-    (click)="addStep()"
-    [disabled]="filteredSteps.length > 0 || !newStepName.trim()"
+  <div
+    class="add-step-controls"
+    *ngIf="newStepName.trim() && filteredSteps.length === 0"
   >
-    Добавить шаг
-  </button>
+    <button class="secondary-button" (click)="addStep()">Добавить шаг</button>
+
+    <label class="checkbox-label">
+      <input type="checkbox" [(ngModel)]="newStepPenalty" />
+      Штраф за невыполнение
+    </label>
+  </div>
 </div>
 
 <div class="lists-container">

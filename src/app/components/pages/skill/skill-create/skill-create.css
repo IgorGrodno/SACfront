@@ -165,3 +165,37 @@ input[type="text"] {
   cursor: not-allowed; /* чтобы было понятно, что клик невозможен */
   opacity: 0.7;
 }
+.add-step-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* расстояние между чекбоксом и кнопкой */
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.add-step-controls {
+  display: flex;
+  align-items: center; /* по вертикали центрируем элементы */
+  gap: 15px; /* расстояние между чекбоксом и кнопкой */
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px; /* увеличиваем размер текста */
+  cursor: pointer;
+}
+
+/* Увеличиваем сам чекбокс */
+.checkbox-label input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #1976d2; /* можно сделать цвет чекбокса как у кнопки */
+}

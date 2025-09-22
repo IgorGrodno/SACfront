@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -39,7 +44,6 @@ export class TestResult implements OnInit {
   sortColumn: keyof TestResultView | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  selectedStudentId?: number;
   selectedSkill?: string;
   selectedDiscipline?: string;
 
@@ -60,11 +64,35 @@ export class TestResult implements OnInit {
     private fb: FormBuilder,
     private disciplineService: DisciplineService
   ) {
-    this.filterForm = this.fb.group({ from: [0], to: [0] });
+    this.filterForm = this.fb.group(
+      {
+        from: [
+          1,
+          [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)],
+        ],
+        to: [
+          5000,
+          [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)],
+        ],
+      },
+      { validators: this.rangeValidator }
+    );
+  }
+
+  /** Валидатор диапазона: "to" ≥ "from" */
+  private rangeValidator(group: FormGroup) {
+    const from = Number(group.get('from')?.value);
+    const to = Number(group.get('to')?.value);
+    return from && to && to >= from ? null : { rangeInvalid: true };
   }
 
   ngOnInit(): void {
     this.loadResults();
+
+    // 🔥 Подписка на изменение диапазона студентов
+    this.filterForm.valueChanges.subscribe(() => {
+      this.recalculateUniqueValues();
+    });
   }
 
   private loadResults(): void {
@@ -87,12 +115,10 @@ export class TestResult implements OnInit {
 
   private async handleResults(data: any[]): Promise<void> {
     try {
-      // Получаем уникальные id
       const sessionIds = [...new Set(data.map((r) => r.sessionId))];
       const skillIds = [...new Set(data.map((r) => r.skillId))];
       const teacherIds = [...new Set(data.map((r) => r.teacherId))];
 
-      // Загружаем сессии, навыки, преподавателей и дисциплины ПАРАЛЛЕЛЬНО
       const [sessions, skills, teachers, disciplines] = await Promise.all([
         Promise.all(
           sessionIds.map((id) =>
@@ -110,7 +136,6 @@ export class TestResult implements OnInit {
         firstValueFrom(this.disciplineService.getDisciplines()),
       ]);
 
-      // Создаём мапы для быстрого доступа
       const sessionMap = new Map(
         sessionIds.map((id, i) => [id, sessions[i]?.name ?? ''])
       );
@@ -128,13 +153,11 @@ export class TestResult implements OnInit {
         ])
       );
 
-      // Мапа skillId -> disciplineName
       const skillToDisciplineMap = new Map<number, string>();
       disciplines.forEach((d) => {
         d.skills?.forEach((s) => skillToDisciplineMap.set(s.id, d.name));
       });
 
-      // Формируем результаты
       this.results = data
         .map((r) => {
           const skill = skillMap.get(r.skillId);
@@ -155,22 +178,18 @@ export class TestResult implements OnInit {
         })
         .sort((a, b) => b.resultDate.getTime() - a.resultDate.getTime());
 
-      // Уникальные значения для фильтров/табов
-      this.uniqueStudents = [
+      // Установим min/max для фильтра
+      const allStudents = [
         ...new Set(this.results.map((r) => r.studentId)),
       ].sort((a, b) => a - b);
-      this.uniqueSkills = [...new Set(this.results.map((r) => r.skillName))];
-      this.uniqueDisciplines = [
-        ...new Set(this.results.map((r) => r.disciplineName)),
-      ];
-
-      // Заполняем фильтры
-      this.minStudentId = this.uniqueStudents[0];
-      this.maxStudentId = this.uniqueStudents[this.uniqueStudents.length - 1];
+      this.minStudentId = allStudents[0];
+      this.maxStudentId = allStudents[allStudents.length - 1];
       this.filterForm.patchValue({
         from: this.minStudentId,
         to: this.maxStudentId,
       });
+
+      this.recalculateUniqueValues(); // ✅ пересчёт после загрузки
     } catch (e) {
       console.error('Ошибка при загрузке связанных данных', e);
       this.resetResults();
@@ -179,8 +198,26 @@ export class TestResult implements OnInit {
     }
   }
 
+  /** 🔥 Пересчёт уникальных значений для всех вкладок */
+  private recalculateUniqueValues(): void {
+    const filtered = this.filteredResults;
+
+    this.uniqueStudents = [...new Set(filtered.map((r) => r.studentId))].sort(
+      (a, b) => a - b
+    );
+    this.uniqueSkills = [...new Set(filtered.map((r) => r.skillName))].sort(
+      (a, b) => a.localeCompare(b)
+    );
+    this.uniqueDisciplines = [
+      ...new Set(filtered.map((r) => r.disciplineName)),
+    ];
+  }
+
   private resetResults(): void {
     this.results = [];
+    this.uniqueStudents = [];
+    this.uniqueSkills = [];
+    this.uniqueDisciplines = [];
     this.isLoading = false;
   }
 
@@ -198,17 +235,16 @@ export class TestResult implements OnInit {
 
   setActiveTab(tab: 'all' | 'students' | 'skills' | 'disciplines'): void {
     this.activeTab = tab;
-    this.selectedStudentId = undefined;
     this.selectedSkill = undefined;
     this.selectedDiscipline = undefined;
   }
 
-  getResultsForSelectedStudent(): TestResultView[] {
-    return this.selectedStudentId
-      ? this.filteredResults.filter(
-          (r) => r.studentId === this.selectedStudentId
-        )
-      : [];
+  /** Оценка студента по конкретному навыку */
+  getScoreForStudentSkill(studentId: number, skillName: string): number | null {
+    const result = this.filteredResults.find(
+      (r) => r.studentId === studentId && r.skillName === skillName
+    );
+    return result ? result.score : null;
   }
 
   getResultsForSelectedSkill(): TestResultView[] {
@@ -219,7 +255,8 @@ export class TestResult implements OnInit {
 
   getAverageScoreForSkill(skill: string): number {
     const skillResults = this.filteredResults.filter(
-      (r) => r.skillName === skill
+      (r) =>
+        r.skillName === skill && this.filteredStudents.includes(r.studentId)
     );
     if (!skillResults.length) return 0;
     return Math.round(
@@ -263,5 +300,24 @@ export class TestResult implements OnInit {
         ? String(valueA).localeCompare(String(valueB))
         : String(valueB).localeCompare(String(valueA));
     });
+  }
+
+  get filteredStudents(): number[] {
+    const { from, to } = this.filterForm.value;
+    return this.uniqueStudents.filter((id) => id >= from && id <= to);
+  }
+
+  preventNonNumeric(event: KeyboardEvent): void {
+    // Разрешаем цифры, backspace, delete, стрелки
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+    ];
+    if (!/[0-9]/.test(event.key) && !allowedKeys.includes(event.key)) {
+      event.preventDefault();
+    }
   }
 }

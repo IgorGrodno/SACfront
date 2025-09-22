@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { ExamService } from '../../../../services/exam.service';
 import { Skill } from '../../../../interfaces/skill.interface';
 import { Subscription } from 'rxjs';
+import { SkillTestResultsService } from '../../../../services/skill-test-results.service';
 
 @Component({
   selector: 'app-skill-exam',
@@ -40,7 +41,8 @@ export class SkillExam implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private sessionService: SessionService,
     private authService: AuthService,
-    private examService: ExamService
+    private examService: ExamService,
+    private skillTestResultsService: SkillTestResultsService
   ) {}
 
   ngOnInit(): void {
@@ -118,10 +120,31 @@ export class SkillExam implements OnInit, OnDestroy {
       .subscribe({
         next: (session) => {
           this.studentIds = session.studentNumbers;
-          this.filteredStudents = [...this.studentIds];
+
+          // загружаем результаты экзаменов по выбранной сессии
+          const examSub = this.skillTestResultsService
+            .getBySessionId(this.currentSessionId!)
+            .subscribe({
+              next: (results) => {
+                // выбираем только те результаты, которые относятся к текущему навыку
+                const passedStudents = results
+                  .filter((r) => r.skillId === this.skill?.id)
+                  .map((r) => r.studentId);
+
+                // исключаем студентов, которые уже сдавали
+                this.filteredStudents = this.studentIds.filter(
+                  (id) => !passedStudents.includes(id)
+                );
+              },
+              error: (err) =>
+                console.error('Ошибка загрузки результатов экзаменов:', err),
+            });
+
+          this.subs.push(examSub);
         },
         error: (err) => console.error('Ошибка загрузки сессии:', err),
       });
+
     this.subs.push(s);
   }
 
@@ -170,6 +193,7 @@ export class SkillExam implements OnInit, OnDestroy {
       next: () => {
         alert('Результат экзамена успешно создан');
         this.resetForm();
+        this.loadStudents(); // <-- переносим сюда, после resetForm
       },
       error: (err) =>
         console.error('Ошибка при создании результата экзамена:', err),
@@ -233,7 +257,6 @@ export class SkillExam implements OnInit, OnDestroy {
   private resetForm(): void {
     this.stepScores = Array(this.skillSteps.length).fill(0);
     this.currentStudentId = undefined;
-    this.filteredStudents = [...this.studentIds];
     this.studentSearch = '';
     this.score = 0;
   }
