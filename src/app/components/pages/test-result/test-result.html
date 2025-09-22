@@ -96,30 +96,35 @@
   </ng-template>
 </div>
 
-<!-- Студенты -->
+<!-- Студенты (транспонированная таблица) -->
 <div class="tab-panel" *ngIf="activeTab === 'students'">
   <div class="card">
     <h3>Сравнительная таблица студентов</h3>
-    <table class="results-table">
-      <thead>
-        <tr>
-          <th>Навык</th>
-          <th *ngFor="let s of filteredStudents">{{ s }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let skill of uniqueSkills">
-          <td class="skill-name">{{ skill }}</td>
-          <td *ngFor="let s of filteredStudents">
-            {{
-              getScoreForStudentSkill(s, skill) !== null
-                ? getScoreForStudentSkill(s, skill) + "%"
-                : "-"
-            }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div class="table-wrapper">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Студент</th>
+            <th *ngFor="let skill of uniqueSkills" class="skill-header">
+              {{ skill }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredStudents">
+            <td class="student-name">{{ s }}</td>
+            <td *ngFor="let skill of uniqueSkills">
+              {{
+                getScoreForStudentSkill(s, skill) !== null
+                  ? getScoreForStudentSkill(s, skill) + "%"
+                  : "-"
+              }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

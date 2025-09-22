@@ -145,3 +145,43 @@
     transform: translateY(0);
   }
 }
+
+.table-wrapper {
+  overflow-x: auto; /* горизонтальная прокрутка */
+  width: 100%;
+}
+
+.results-table {
+  width: max-content; /* таблица занимает столько места, сколько нужно */
+  min-width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  table-layout: fixed; /* фиксированная ширина колонок */
+}
+
+.results-table th,
+.results-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+  word-wrap: break-word; /* перенос слов */
+  word-break: break-word;
+}
+
+.results-table th.skill-header {
+  max-width: 120px; /* ширина колонки навыка */
+}
+
+.results-table td.student-name {
+  font-weight: 600;
+  text-align: left;
+  background: #f7f7f7;
+  padding-left: 6px;
+  position: sticky;
+  left: 0; /* фиксируем имена студентов при прокрутке */
+  background: #f7f7f7;
+  z-index: 1;
+}
