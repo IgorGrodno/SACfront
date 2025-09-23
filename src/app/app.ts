@@ -39,7 +39,6 @@ export class App {
           this.menuItems.set('DisciplineCreate', '/discipline-create');
           this.menuItems.set('DisciplineList', '/discipline-list');
           this.menuItems.set('Skill-list', '/skill-list');
-          this.menuItems.set('TestResult', '/test-result');
         }
         if (
           this.currentUser.roles?.includes('ROLE_TEACHER' as unknown as string)

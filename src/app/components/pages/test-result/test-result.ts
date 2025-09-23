@@ -13,8 +13,9 @@ import { SkillTestResultsService } from '../../../services/skill-test-results.se
 import { SessionService } from '../../../services/session.service';
 import { SkillService } from '../../../services/skill.service';
 import { ProfileService } from '../../../services/profile.service';
-import { StepScoreEntry } from '../../../interfaces/stepScoreEntry.interface';
 import { DisciplineService } from '../../../services/discipline.service';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 interface TestResultView {
   id: number;
@@ -39,16 +40,7 @@ export class TestResult implements OnInit {
   isLoading = false;
   sessionId?: string;
 
-  activeTab: 'all' | 'students' | 'skills' | 'disciplines' = 'all';
-
-  sortColumn: keyof TestResultView | null = null;
-  sortDirection: 'asc' | 'desc' = 'asc';
-
-  selectedSkill?: string;
-  selectedDiscipline?: string;
-
   uniqueStudents: number[] = [];
-  uniqueSkills: string[] = [];
   uniqueDisciplines: string[] = [];
 
   filterForm: FormGroup;
@@ -104,10 +96,7 @@ export class TestResult implements OnInit {
     request$.subscribe({
       next: (data) =>
         data?.length ? this.handleResults(data) : this.resetResults(),
-      error: (err) => {
-        console.error('Ошибка при загрузке результатов', err);
-        this.resetResults();
-      },
+      error: () => this.resetResults(),
     });
   }
 
@@ -162,7 +151,6 @@ export class TestResult implements OnInit {
           const disciplineName = skill
             ? skillToDisciplineMap.get(skill.id) ?? ''
             : '';
-
           return {
             id: r.id ?? 0,
             sessionName: sessionMap.get(r.sessionId) || '',
@@ -187,8 +175,7 @@ export class TestResult implements OnInit {
       });
 
       this.recalculateUniqueValues();
-    } catch (e) {
-      console.error('Ошибка при загрузке связанных данных', e);
+    } catch {
       this.resetResults();
     } finally {
       this.isLoading = false;
@@ -197,12 +184,8 @@ export class TestResult implements OnInit {
 
   private recalculateUniqueValues(): void {
     const filtered = this.filteredResults;
-
     this.uniqueStudents = [...new Set(filtered.map((r) => r.studentId))].sort(
       (a, b) => a - b
-    );
-    this.uniqueSkills = [...new Set(filtered.map((r) => r.skillName))].sort(
-      (a, b) => a.localeCompare(b)
     );
     this.uniqueDisciplines = [
       ...new Set(filtered.map((r) => r.disciplineName)),
@@ -212,7 +195,6 @@ export class TestResult implements OnInit {
   private resetResults(): void {
     this.results = [];
     this.uniqueStudents = [];
-    this.uniqueSkills = [];
     this.uniqueDisciplines = [];
     this.isLoading = false;
   }
@@ -222,16 +204,17 @@ export class TestResult implements OnInit {
     return this.results.filter((r) => r.studentId >= from && r.studentId <= to);
   }
 
-  private calculateScore(stepScores: StepScoreEntry[]): number {
+  private calculateScore(stepScores: { score: number }[]): number {
     if (!stepScores?.length) return 0;
     const total = stepScores.reduce((sum, entry) => sum + entry.score, 0);
     return Math.round((Math.max(total, 0) / (stepScores.length * 2)) * 100);
   }
 
-  setActiveTab(tab: 'all' | 'students' | 'skills' | 'disciplines'): void {
-    this.activeTab = tab;
-    this.selectedSkill = undefined;
-    this.selectedDiscipline = undefined;
+  getSkillsForDiscipline(discipline: string): string[] {
+    const skills = this.filteredResults
+      .filter((r) => r.disciplineName === discipline)
+      .map((r) => r.skillName);
+    return [...new Set(skills)].sort();
   }
 
   getScoreForStudentSkill(studentId: number, skillName: string): number | null {
@@ -239,23 +222,6 @@ export class TestResult implements OnInit {
       (r) => r.studentId === studentId && r.skillName === skillName
     );
     return result ? result.score : null;
-  }
-
-  getResultsForSelectedSkill(): TestResultView[] {
-    return this.selectedSkill
-      ? this.filteredResults.filter((r) => r.skillName === this.selectedSkill)
-      : [];
-  }
-
-  getAverageScoreForSkill(skill: string): number {
-    const skillResults = this.filteredResults.filter(
-      (r) =>
-        r.skillName === skill && this.filteredStudents.includes(r.studentId)
-    );
-    if (!skillResults.length) return 0;
-    return Math.round(
-      skillResults.reduce((sum, r) => sum + r.score, 0) / skillResults.length
-    );
   }
 
   getAverageScoreForDiscipline(discipline: string): number {
@@ -269,47 +235,122 @@ export class TestResult implements OnInit {
     );
   }
 
-  sortBy(column: keyof TestResultView): void {
-    this.sortDirection =
-      this.sortColumn === column && this.sortDirection === 'asc'
-        ? 'desc'
-        : 'asc';
-    this.sortColumn = column;
+  getAverageScoreForStudent(studentId: number): number {
+    const studentResults = this.filteredResults.filter(
+      (r) => r.studentId === studentId
+    );
+    if (!studentResults.length) return 0;
+    return Math.round(
+      studentResults.reduce((sum, r) => sum + r.score, 0) /
+        studentResults.length
+    );
+  }
 
-    this.results.sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-
-      if (valueA instanceof Date && valueB instanceof Date) {
-        return this.sortDirection === 'asc'
-          ? valueA.getTime() - valueB.getTime()
-          : valueB.getTime() - valueA.getTime();
-      }
-
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-      }
-
-      return this.sortDirection === 'asc'
-        ? String(valueA).localeCompare(String(valueB))
-        : String(valueB).localeCompare(String(valueA));
-    });
+  getAverageScoreForSkillAcrossStudents(skill: string): number {
+    const skillResults = this.filteredResults.filter(
+      (r) => r.skillName === skill
+    );
+    if (!skillResults.length) return 0;
+    return Math.round(
+      skillResults.reduce((sum, r) => sum + r.score, 0) / skillResults.length
+    );
   }
 
   get filteredStudents(): number[] {
-    const { from, to } = this.filterForm.value;
-    return this.uniqueStudents.filter((id) => id >= from && id <= to);
+    return this.uniqueStudents.filter(
+      (studentId) =>
+        studentId >= this.filterForm.value.from &&
+        studentId <= this.filterForm.value.to
+    );
   }
 
   preventNonNumeric(event: KeyboardEvent): void {
     const allowedKeys = [
       'Backspace',
-      'Delete',
+      'Tab',
       'ArrowLeft',
       'ArrowRight',
-      'Tab',
+      'Delete',
     ];
-    if (!/[0-9]/.test(event.key) && !allowedKeys.includes(event.key))
+    if (!allowedKeys.includes(event.key) && !/^\d$/.test(event.key))
       event.preventDefault();
+  }
+
+  async exportStudentsByDisciplineExcel(filename = 'Студенты.xlsx') {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Студенты');
+
+    const header1: string[] = [''];
+    const header2: string[] = ['Студент'];
+
+    this.uniqueDisciplines.forEach((discipline) => {
+      const skills = this.getSkillsForDiscipline(discipline);
+      const colspan = Math.max(skills.length, 1);
+
+      header1.push(
+        discipline +
+          ` (Средний: ${this.getAverageScoreForDiscipline(discipline)}%)`
+      );
+      for (let i = 1; i < colspan; i++) header1.push('');
+
+      if (skills.length) skills.forEach((skill) => header2.push(skill));
+      else header2.push('');
+    });
+
+    header1.push('');
+    header2.push('Среднее по студенту');
+
+    worksheet.addRow(header1);
+    worksheet.addRow(header2);
+
+    let colIndex = 2;
+    this.uniqueDisciplines.forEach((discipline) => {
+      const skills = this.getSkillsForDiscipline(discipline);
+      const colspan = Math.max(skills.length, 1);
+      if (colspan > 1)
+        worksheet.mergeCells(1, colIndex, 1, colIndex + colspan - 1);
+      colIndex += colspan;
+    });
+
+    this.filteredStudents.forEach((studentId) => {
+      const row: (string | number)[] = [studentId];
+      this.uniqueDisciplines.forEach((discipline) => {
+        const skills = this.getSkillsForDiscipline(discipline);
+        if (!skills.length) row.push('-');
+        else
+          skills.forEach((skill) => {
+            const score = this.getScoreForStudentSkill(studentId, skill);
+            row.push(score !== null ? score : '-');
+          });
+      });
+      row.push(this.getAverageScoreForStudent(studentId));
+      worksheet.addRow(row);
+    });
+
+    const avgRow: (string | number)[] = ['Среднее по навыку'];
+    this.uniqueDisciplines.forEach((discipline) => {
+      const skills = this.getSkillsForDiscipline(discipline);
+      if (!skills.length) avgRow.push('-');
+      else
+        skills.forEach((skill) =>
+          avgRow.push(this.getAverageScoreForSkillAcrossStudents(skill))
+        );
+    });
+    avgRow.push('-');
+    worksheet.addRow(avgRow);
+
+    worksheet.columns.forEach((col) => (col.width = 15));
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.alignment = {
+          horizontal: 'center',
+          vertical: 'middle',
+          wrapText: true,
+        };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), filename);
   }
 }

@@ -38,137 +38,66 @@
   </div>
 </form>
 
-<!-- Вкладки -->
-<div class="tabs">
-  <button [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
-    Все
-  </button>
-  <button
-    [class.active]="activeTab === 'students'"
-    (click)="setActiveTab('students')"
-  >
-    Студенты
-  </button>
-  <button
-    [class.active]="activeTab === 'skills'"
-    (click)="setActiveTab('skills')"
-  >
-    Навыки
-  </button>
-  <button
-    [class.active]="activeTab === 'disciplines'"
-    (click)="setActiveTab('disciplines')"
-  >
-    Дисциплины
-  </button>
-</div>
+<!-- Студенты -->
+<button (click)="exportStudentsByDisciplineExcel()">Экспорт в Excel</button>
 
-<!-- Вкладки контент -->
-<div class="tab-panel" *ngIf="activeTab === 'all'">
-  <ng-container *ngIf="!isLoading && filteredResults.length; else noResults">
+<div class="card">
+  <h3>Сравнительная таблица студентов</h3>
+  <div class="table-wrapper">
     <table class="results-table">
       <thead>
         <tr>
-          <th *ngIf="!sessionId" (click)="sortBy('sessionName')">Сессия</th>
-          <th (click)="sortBy('disciplineName')">Дисциплина</th>
-          <th (click)="sortBy('skillName')">Навык</th>
-          <th (click)="sortBy('studentId')">Студент</th>
-          <th (click)="sortBy('teacherName')">Преподаватель</th>
-          <th (click)="sortBy('score')">Результат</th>
-          <th (click)="sortBy('resultDate')">Дата</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of filteredResults">
-          <td *ngIf="!sessionId">{{ r.sessionName }}</td>
-          <td>{{ r.disciplineName }}</td>
-          <td>{{ r.skillName }}</td>
-          <td>{{ r.studentId }}</td>
-          <td>{{ r.teacherName }}</td>
-          <td>{{ r.score }}%</td>
-          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </ng-container>
-  <ng-template #noResults>
-    <div class="empty">Нет результатов</div>
-  </ng-template>
-</div>
-
-<!-- Студенты (транспонированная таблица) -->
-<div class="tab-panel" *ngIf="activeTab === 'students'">
-  <div class="card">
-    <h3>Сравнительная таблица студентов</h3>
-
-    <div class="table-wrapper">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Студент</th>
-            <th *ngFor="let skill of uniqueSkills" class="skill-header">
-              {{ skill }}
+          <th rowspan="2">Студент</th>
+          <ng-container *ngFor="let discipline of uniqueDisciplines">
+            <th [attr.colspan]="getSkillsForDiscipline(discipline).length">
+              {{ discipline }} (Средний:
+              {{ getAverageScoreForDiscipline(discipline) }}%)
             </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of filteredStudents">
-            <td class="student-name">{{ s }}</td>
-            <td *ngFor="let skill of uniqueSkills">
-              {{
-                getScoreForStudentSkill(s, skill) !== null
-                  ? getScoreForStudentSkill(s, skill) + "%"
-                  : "-"
-              }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- Навыки -->
-<div class="tab-panel" *ngIf="activeTab === 'skills'">
-  <div class="item-list">
-    <div
-      *ngFor="let skill of uniqueSkills"
-      class="item-card"
-      [class.active]="selectedSkill === skill"
-      (click)="selectedSkill = skill"
-    >
-      <span class="name">{{ skill }}</span>
-      <span class="avg">Средний: {{ getAverageScoreForSkill(skill) }}%</span>
-    </div>
-  </div>
-
-  <div *ngIf="selectedSkill" class="card">
-    <h3>Результаты по навыку {{ selectedSkill }}</h3>
-    <table class="results-table">
-      <thead>
+          </ng-container>
+          <th rowspan="2">Среднее по студенту</th>
+        </tr>
         <tr>
-          <th>Студент</th>
-          <th>Результат</th>
-          <th>Дата</th>
+          <ng-container *ngFor="let discipline of uniqueDisciplines">
+            <ng-container
+              *ngFor="let skill of getSkillsForDiscipline(discipline)"
+            >
+              <th>{{ skill }}</th>
+            </ng-container>
+          </ng-container>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let r of getResultsForSelectedSkill()">
-          <td>{{ r.studentId }}</td>
-          <td>{{ r.score }}%</td>
-          <td>{{ r.resultDate | date : "dd.MM.yyyy" }}</td>
+        <tr *ngFor="let student of filteredStudents">
+          <td>{{ student }}</td>
+          <ng-container *ngFor="let discipline of uniqueDisciplines">
+            <ng-container
+              *ngFor="let skill of getSkillsForDiscipline(discipline)"
+            >
+              <td>
+                {{
+                  getScoreForStudentSkill(student, skill) !== null
+                    ? getScoreForStudentSkill(student, skill) + "%"
+                    : "-"
+                }}
+              </td>
+            </ng-container>
+          </ng-container>
+          <td>{{ getAverageScoreForStudent(student) }}%</td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td>Среднее по навыку</td>
+          <ng-container *ngFor="let discipline of uniqueDisciplines">
+            <ng-container
+              *ngFor="let skill of getSkillsForDiscipline(discipline)"
+            >
+              <td>{{ getAverageScoreForSkillAcrossStudents(skill) }}%</td>
+            </ng-container>
+          </ng-container>
+          <td>-</td>
+        </tr>
+      </tfoot>
     </table>
-  </div>
-</div>
-
-<!-- Дисциплины -->
-<div class="tab-panel" *ngIf="activeTab === 'disciplines'">
-  <div class="item-list">
-    <div *ngFor="let d of uniqueDisciplines" class="item-card">
-      <span class="name">{{ d }}</span>
-      <span class="avg">Средний: {{ getAverageScoreForDiscipline(d) }}%</span>
-    </div>
   </div>
 </div>
