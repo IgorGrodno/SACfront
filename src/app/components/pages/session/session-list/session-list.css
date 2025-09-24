@@ -1,80 +1,73 @@
 h2 {
   text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 2rem 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0;
   font-family: "Inter", sans-serif;
-  color: #1f2937;
+  color: #333;
 }
 
 .session-table {
   width: 100%;
   border-collapse: collapse;
   font-family: "Inter", sans-serif;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .session-table thead {
-  background-color: #3b82f6;
-  color: white;
+  background-color: #e5e5e5;
+  color: #333;
 }
 
 .session-table th,
 .session-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 1rem;
   text-align: center;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
 }
 
-.session-table tbody tr {
-  background-color: #ffffff;
-  transition: background 0.2s, transform 0.2s;
+.session-row {
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.session-table tbody tr:hover {
-  background-color: #f0f4ff;
-  transform: translateY(-2px);
+.session-row:hover {
+  background-color: #f0f0f0;
 }
 
 input[type="checkbox"] {
-  transform: scale(1.2);
+  transform: scale(1.1);
   cursor: not-allowed;
 }
 
 button {
-  margin: 0 0.25rem;
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-button:hover:not(:disabled) {
-  opacity: 0.85;
-  transform: translateY(-1px);
+  transition: background-color 0.2s ease;
 }
 
 button.activate {
-  background-color: #10b981; /* зеленый */
-  color: white;
+  background-color: #cfcfcf;
+  color: #333;
+}
+
+button.activate:hover {
+  background-color: #b5b5b5;
 }
 
 button.deactivate {
-  background-color: #fbbf24; /* желтый */
-  color: white;
+  background-color: #d4d4d4;
+  color: #333;
 }
 
-button.view-details {
-  background-color: #2563eb; /* синий */
-  color: white;
-}
-
-button.delete {
-  background-color: #ef4444; /* красный */
-  color: white;
+button.deactivate:hover {
+  background-color: #b0b0b0;
 }

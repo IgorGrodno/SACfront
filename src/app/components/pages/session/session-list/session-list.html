@@ -13,7 +13,11 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let session of sessions">
+    <tr
+      *ngFor="let session of sessions"
+      class="session-row"
+      (click)="viewSessionDetails(session.id!)"
+    >
       <td>{{ session.name }}</td>
       <td>{{ session.startDate | date : "yyyy-MM-dd" }}</td>
       <td>
@@ -26,13 +30,10 @@
       <td>{{ session.studentNumbers.join(", ") }}</td>
       <td>
         <button
-          (click)="toggleSessionActive(session)"
+          (click)="toggleSessionActive(session, $event)"
           [ngClass]="session.active ? 'deactivate' : 'activate'"
         >
           {{ session.active ? "Деактивировать" : "Активировать" }}
-        </button>
-        <button class="view-details" (click)="viewSessionDetails(session.id!)">
-          Подробнее
         </button>
       </td>
     </tr>

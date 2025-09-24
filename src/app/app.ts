@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';
 import { User } from './interfaces/user.interface';
 import { AuthService } from './services/auth.service';
@@ -39,11 +39,12 @@ export class App {
           this.menuItems.set('DisciplineCreate', '/discipline-create');
           this.menuItems.set('DisciplineList', '/discipline-list');
           this.menuItems.set('Skill-list', '/skill-list');
+          this.menuItems.set('DisciplineListExam', '/exam');
         }
         if (
           this.currentUser.roles?.includes('ROLE_TEACHER' as unknown as string)
         ) {
-          this.menuItems.set('DisciplineListExam', '');
+          this.menuItems.set('DisciplineListExam', '/exam');
         }
         if (
           this.currentUser.roles?.includes('ROLE_STUDENT' as unknown as string)

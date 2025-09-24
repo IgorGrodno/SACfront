@@ -39,7 +39,10 @@ export class SessionList implements OnInit {
     });
   }
 
-  toggleSessionActive(session: Session): void {
+  toggleSessionActive(session: Session, event: MouseEvent): void {
+    // предотвращаем срабатывание перехода по клику на строку
+    event.stopPropagation();
+
     const action = session.active ? 'Деактивировать' : 'Активировать';
     if (!confirm(`${action} сессию "${session.name}"?`)) return;
 

@@ -19,7 +19,7 @@ import { DisciplineEdit } from './components/pages/discipline/discipline-edit/di
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'exam',
     component: DisciplineListExam,
     canActivate: [AuthGuard],
   },
@@ -110,6 +110,10 @@ export const routes: Routes = [
     path: 'profile/:id',
     component: ProfilePage,
     canActivate: [AuthGuard],
+  },
+  {
+    path: '',
+    component: DisciplineListExam,
   },
   {
     path: '**',

@@ -210,13 +210,6 @@ export class TestResult implements OnInit {
     return Math.round((Math.max(total, 0) / (stepScores.length * 2)) * 100);
   }
 
-  getSkillsForDiscipline(discipline: string): string[] {
-    const skills = this.filteredResults
-      .filter((r) => r.disciplineName === discipline)
-      .map((r) => r.skillName);
-    return [...new Set(skills)].sort();
-  }
-
   getScoreForStudentSkill(studentId: number, skillName: string): number | null {
     const result = this.filteredResults.find(
       (r) => r.studentId === studentId && r.skillName === skillName
@@ -276,6 +269,18 @@ export class TestResult implements OnInit {
       event.preventDefault();
   }
 
+  getSkillsForDiscipline(discipline: string): { name: string; avg: number }[] {
+    const skills = this.filteredResults
+      .filter((r) => r.disciplineName === discipline)
+      .map((r) => r.skillName);
+    const uniqueSkills = [...new Set(skills)].sort();
+
+    return uniqueSkills.map((skill) => ({
+      name: skill,
+      avg: this.getAverageScoreForSkillAcrossStudents(skill),
+    }));
+  }
+
   async exportStudentsByDisciplineExcel(filename = 'Студенты.xlsx') {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Студенты');
@@ -284,16 +289,18 @@ export class TestResult implements OnInit {
     const header2: string[] = ['Студент'];
 
     this.uniqueDisciplines.forEach((discipline) => {
-      const skills = this.getSkillsForDiscipline(discipline);
-      const colspan = Math.max(skills.length, 1);
+      const skillsWithAvg = this.getSkillsForDiscipline(discipline);
+      const colspan = Math.max(skillsWithAvg.length, 1);
 
       header1.push(
-        discipline +
-          ` (Средний: ${this.getAverageScoreForDiscipline(discipline)}%)`
+        `${discipline} (${this.getAverageScoreForDiscipline(discipline)}%)`
       );
       for (let i = 1; i < colspan; i++) header1.push('');
 
-      if (skills.length) skills.forEach((skill) => header2.push(skill));
+      if (skillsWithAvg.length)
+        skillsWithAvg.forEach((skill) =>
+          header2.push(`${skill.name} (${skill.avg}%)`)
+        );
       else header2.push('');
     });
 
@@ -305,8 +312,8 @@ export class TestResult implements OnInit {
 
     let colIndex = 2;
     this.uniqueDisciplines.forEach((discipline) => {
-      const skills = this.getSkillsForDiscipline(discipline);
-      const colspan = Math.max(skills.length, 1);
+      const skillsWithAvg = this.getSkillsForDiscipline(discipline);
+      const colspan = Math.max(skillsWithAvg.length, 1);
       if (colspan > 1)
         worksheet.mergeCells(1, colIndex, 1, colIndex + colspan - 1);
       colIndex += colspan;
@@ -315,29 +322,17 @@ export class TestResult implements OnInit {
     this.filteredStudents.forEach((studentId) => {
       const row: (string | number)[] = [studentId];
       this.uniqueDisciplines.forEach((discipline) => {
-        const skills = this.getSkillsForDiscipline(discipline);
-        if (!skills.length) row.push('-');
+        const skillsWithAvg = this.getSkillsForDiscipline(discipline);
+        if (!skillsWithAvg.length) row.push('-');
         else
-          skills.forEach((skill) => {
-            const score = this.getScoreForStudentSkill(studentId, skill);
+          skillsWithAvg.forEach((skill) => {
+            const score = this.getScoreForStudentSkill(studentId, skill.name);
             row.push(score !== null ? score : '-');
           });
       });
       row.push(this.getAverageScoreForStudent(studentId));
       worksheet.addRow(row);
     });
-
-    const avgRow: (string | number)[] = ['Среднее по навыку'];
-    this.uniqueDisciplines.forEach((discipline) => {
-      const skills = this.getSkillsForDiscipline(discipline);
-      if (!skills.length) avgRow.push('-');
-      else
-        skills.forEach((skill) =>
-          avgRow.push(this.getAverageScoreForSkillAcrossStudents(skill))
-        );
-    });
-    avgRow.push('-');
-    worksheet.addRow(avgRow);
 
     worksheet.columns.forEach((col) => (col.width = 15));
     worksheet.eachRow((row) => {

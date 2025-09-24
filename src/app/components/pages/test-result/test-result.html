@@ -61,7 +61,7 @@
             <ng-container
               *ngFor="let skill of getSkillsForDiscipline(discipline)"
             >
-              <th>{{ skill }}</th>
+              <th>{{ skill.name }} ({{ skill.avg }}%)</th>
             </ng-container>
           </ng-container>
         </tr>
@@ -75,8 +75,8 @@
             >
               <td>
                 {{
-                  getScoreForStudentSkill(student, skill) !== null
-                    ? getScoreForStudentSkill(student, skill) + "%"
+                  getScoreForStudentSkill(student, skill.name) !== null
+                    ? getScoreForStudentSkill(student, skill.name) + "%"
                     : "-"
                 }}
               </td>
@@ -85,19 +85,6 @@
           <td>{{ getAverageScoreForStudent(student) }}%</td>
         </tr>
       </tbody>
-      <tfoot>
-        <tr>
-          <td>Среднее по навыку</td>
-          <ng-container *ngFor="let discipline of uniqueDisciplines">
-            <ng-container
-              *ngFor="let skill of getSkillsForDiscipline(discipline)"
-            >
-              <td>{{ getAverageScoreForSkillAcrossStudents(skill) }}%</td>
-            </ng-container>
-          </ng-container>
-          <td>-</td>
-        </tr>
-      </tfoot>
     </table>
   </div>
 </div>
