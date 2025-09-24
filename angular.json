@@ -75,7 +75,7 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/styles.css", "src/styles/styles.scss"]
+            "styles": ["src/styles/theme.css", "src/styles.css"]
           }
         }
       }

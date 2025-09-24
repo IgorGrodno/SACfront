@@ -1,16 +1,14 @@
 <table class="users-table">
   <thead>
     <tr>
-      <th>ID</th>
-      <th>Username</th>
+      <th>ФИО</th>
       <th *ngFor="let role of allRoles">{{ role.replace("ROLE_", "") }}</th>
       <th>Действия</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let user of users">
-      <td>{{ user.id }}</td>
-      <td>{{ user.username }}</td>
+      <td>{{ getFullName(user) }}</td>
 
       <td *ngFor="let role of allRoles">
         <input
@@ -25,10 +23,10 @@
           [disabled]="!changedUsers.has(user.id)"
           (click)="saveChanges(user)"
         >
-          💾
+          Сохранить
         </button>
-        <button (click)="deleteUser(user.id)">🗑</button>
-        <button (click)="goToProfile(user.id)">👤</button>
+        <button (click)="deleteUser(user.id)">Удалить</button>
+        <button (click)="goToProfile(user.id)">Профиль</button>
       </td>
     </tr>
   </tbody>

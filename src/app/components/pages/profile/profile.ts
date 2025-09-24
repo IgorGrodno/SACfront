@@ -27,6 +27,8 @@ import { ProfileService } from '../../../services/profile.service';
 import { DisciplineService } from '../../../services/discipline.service';
 import { Profile } from '../../../interfaces/profile.interface';
 import { Discipline } from '../../../interfaces/discipline.interface';
+import { UserService } from '../../../services/user.service';
+import { User } from '../../../interfaces/user.interface';
 
 @Component({
   selector: 'app-profile',
@@ -39,6 +41,9 @@ export class ProfilePage implements OnInit, AfterViewInit {
   @Input() userId!: number;
   userProfile?: Profile;
   isAdmin = false;
+
+  username = '';
+  newPassword = '';
 
   firstName = '';
   secondName = '';
@@ -61,6 +66,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
     private authService: AuthService,
     private profileService: ProfileService,
     private disciplineService: DisciplineService,
+    private userService: UserService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {}
@@ -73,10 +79,15 @@ export class ProfilePage implements OnInit, AfterViewInit {
         switchMap((params) => {
           this.userId =
             +params['id'] || this.authService.getCurrentUser()?.id || 0;
-          return this.profileService.getProfile(this.userId);
+          return forkJoin({
+            profile: this.profileService.getProfile(this.userId),
+            user: this.userService.getUserById(this.userId),
+          });
         }),
-        switchMap((profile) => {
+        switchMap(({ profile, user }) => {
           this.userProfile = profile;
+          this.username = user.username;
+
           this.firstName = profile.firstName || '';
           this.secondName = profile.secondName || '';
           this.fatherName = profile.fatherName || '';
@@ -99,6 +110,45 @@ export class ProfilePage implements OnInit, AfterViewInit {
         error: (err) =>
           console.error('Ошибка загрузки профиля или дисциплин', err),
       });
+  }
+
+  saveProfile(): void {
+    if (!this.userProfile) return;
+
+    this.userProfile.firstName = this.firstName.trim();
+    this.userProfile.secondName = this.secondName.trim();
+    this.userProfile.fatherName = this.fatherName.trim();
+
+    const profileRequest = this.profileService.updateProfile(
+      this.userProfile,
+      this.userDisciplines
+    );
+
+    if (this.isAdmin && this.userProfile) {
+      // Ensure roles are present for User object
+      const user: User = {
+        id: this.userId,
+        username: this.username.trim(),
+        password: this.newPassword.trim() || undefined,
+        roles: (this.userProfile as any).roles || [], // fallback if roles are not present
+      };
+
+      forkJoin([profileRequest, this.userService.updateUser(user)]).subscribe({
+        next: () => {
+          console.log('Профиль и пользователь обновлены');
+          this.newPassword = '';
+        },
+        error: (err) => console.error('Ошибка при обновлении профиля', err),
+      });
+    } else {
+      profileRequest.subscribe({
+        next: () => {
+          console.log('Профиль обновлен');
+          this.newPassword = '';
+        },
+        error: (err) => console.error('Ошибка при обновлении профиля', err),
+      });
+    }
   }
 
   ngAfterViewInit(): void {
@@ -150,23 +200,5 @@ export class ProfilePage implements OnInit, AfterViewInit {
       );
     }
     this.updateHeights();
-  }
-
-  saveProfile(): void {
-    if (!this.userProfile) return;
-
-    this.userProfile.firstName = this.firstName.trim();
-    this.userProfile.secondName = this.secondName.trim();
-    this.userProfile.fatherName = this.fatherName.trim();
-
-    this.profileService
-      .updateProfile(this.userProfile, this.userDisciplines)
-      .subscribe({
-        next: (updatedProfile) => {
-          this.userProfile = updatedProfile;
-          console.log('Профиль успешно обновлён', updatedProfile);
-        },
-        error: (err) => console.error('Ошибка при обновлении профиля', err),
-      });
   }
 }

@@ -14,6 +14,24 @@
       Отчество:
       <input type="text" [(ngModel)]="fatherName" name="fatherName" />
     </label>
+
+    <!-- 🔑 Админская секция -->
+    <div *ngIf="isAdmin" class="admin-section">
+      <h3>Админская секция</h3>
+      <label>
+        Логин:
+        <input type="text" [(ngModel)]="username" name="username" />
+      </label>
+      <label>
+        Новый пароль:
+        <input
+          type="password"
+          [(ngModel)]="newPassword"
+          name="newPassword"
+          placeholder="Оставьте пустым, чтобы не менять"
+        />
+      </label>
+    </div>
   </form>
 
   <hr />
