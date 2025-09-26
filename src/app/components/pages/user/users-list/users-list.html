@@ -1,3 +1,9 @@
+<div class="add-user-form">
+  <input type="text" placeholder="Логин" [(ngModel)]="newUser.username" />
+  <input type="password" placeholder="Пароль" [(ngModel)]="newUser.password" />
+  <button (click)="addUser()">Добавить пользователя</button>
+</div>
+
 <table class="users-table">
   <thead>
     <tr>
@@ -9,7 +15,6 @@
   <tbody>
     <tr *ngFor="let user of users">
       <td>{{ getFullName(user) }}</td>
-
       <td *ngFor="let role of allRoles">
         <input
           type="checkbox"
@@ -17,7 +22,6 @@
           (change)="toggleRole(user, role)"
         />
       </td>
-
       <td class="actions">
         <button
           [disabled]="!changedUsers.has(user.id)"

@@ -91,7 +91,6 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
           this.updateAvailableSkills();
           callback?.();
         },
-        error: (err) => console.error('Ошибка загрузки навыков:', err),
       });
   }
 
@@ -113,7 +112,6 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
             this.updateAvailableSkills();
             this.triggerHeightUpdate();
           },
-          error: (err) => console.error('Ошибка загрузки дисциплины:', err),
         });
     }
   }
@@ -164,7 +162,6 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
 
     save$.pipe(takeUntil(this.destroy$)).subscribe({
       next: () => this.loadSkills(() => this.loadDisciplineIfEditing()),
-      error: (err) => console.error('Ошибка при сохранении дисциплины:', err),
     });
   }
 
@@ -179,7 +176,6 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
           );
           this.triggerHeightUpdate();
         },
-        error: (err) => console.error('Ошибка удаления дисциплины:', err),
       });
   }
 

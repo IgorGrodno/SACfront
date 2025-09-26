@@ -90,7 +90,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
           this.allSteps = data;
           this.updateAvailableSteps();
         },
-        error: (err) => console.error('Ошибка загрузки шагов:', err),
       });
   }
 
@@ -113,7 +112,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
           this.newStepName = '';
           this.loadSteps();
         },
-        error: (err) => console.error('Ошибка добавления шага:', err),
       });
   }
 
@@ -126,7 +124,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
           this.allSteps = this.allSteps.filter((s) => s.id !== id);
           this.updateAvailableSteps();
         },
-        error: (err) => console.error('Ошибка удаления шага:', err),
       });
   }
 
@@ -150,7 +147,6 @@ export class SkillCreate implements OnInit, AfterViewInit, OnDestroy {
           this.skillSteps = [];
           this.loadSteps();
         },
-        error: (err) => console.error('Ошибка при добавлении навыка:', err),
       });
   }
 

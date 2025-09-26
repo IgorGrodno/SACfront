@@ -32,27 +32,24 @@ export class App {
         if (
           this.currentUser.roles?.includes('ROLE_ADMIN' as unknown as string)
         ) {
-          this.menuItems.set('Users List', '/users-list');
-          this.menuItems.set('Create Session', '/session-create');
-          this.menuItems.set('Session List', '/session-list');
-          this.menuItems.set('SkillCreate', '/skill-create');
-          this.menuItems.set('DisciplineCreate', '/discipline-create');
-          this.menuItems.set('DisciplineList', '/discipline-list');
-          this.menuItems.set('Skill-list', '/skill-list');
-          this.menuItems.set('DisciplineListExam', '/exam');
+          this.menuItems.set('Список пользователей', '/users-list');
+          this.menuItems.set('Список сессий', '/session-list');
+          this.menuItems.set('Создать дисциплину', '/discipline-create');
+          this.menuItems.set('Список дисциплин', '/discipline-list');
+          this.menuItems.set('Создать навык', '/skill-create');
+          this.menuItems.set('Список навыков', '/skill-list');
+          this.menuItems.set('Экзамен по дисциплине', '/exam');
         }
         if (
           this.currentUser.roles?.includes('ROLE_TEACHER' as unknown as string)
         ) {
-          this.menuItems.set('DisciplineListExam', '/exam');
+          this.menuItems.set('Экзамен по дисциплине', '/exam');
         }
         if (
           this.currentUser.roles?.includes('ROLE_STUDENT' as unknown as string)
         ) {
         }
       }
-      this.menuItems.set('Login', '/login');
-      this.menuItems.set('Registration', '/registration');
     });
   }
 }

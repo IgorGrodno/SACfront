@@ -1,9 +1,7 @@
 import { Routes } from '@angular/router';
 import { Login } from './components/pages/login/login';
-import { Registration } from './components/pages/registration/registration';
 import { UsersList } from './components/pages/user/users-list/users-list';
-import { SessionCreate } from './components/pages/session/session-create/session-create';
-import { SessionList } from './components/pages/session/session-list/session-list';
+import { SessionList } from './components/pages/session/session-list';
 import { SkillCreate } from './components/pages/skill/skill-create/skill-create';
 import { SkillList } from './components/pages/skill/skill-list/skill-list';
 import { AdminGuard } from './guards/admin-guard';
@@ -16,6 +14,7 @@ import { SkillExam } from './components/pages/skill/skill-exam/skill-exam';
 import { SkillEdit } from './components/pages/skill/skill-edit/skill-edit';
 import { TestResult } from './components/pages/test-result/test-result';
 import { DisciplineEdit } from './components/pages/discipline/discipline-edit/discipline-edit';
+import { CheckExamResult } from './components/pages/check-exam-result/check-exam-result';
 
 export const routes: Routes = [
   {
@@ -63,17 +62,8 @@ export const routes: Routes = [
     component: Login,
   },
   {
-    path: 'registration',
-    component: Registration,
-  },
-  {
     path: 'users-list',
     component: UsersList,
-    canActivate: [AdminGuard],
-  },
-  {
-    path: 'session-create',
-    component: SessionCreate,
     canActivate: [AdminGuard],
   },
   {
@@ -113,7 +103,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: DisciplineListExam,
+    component: CheckExamResult,
   },
   {
     path: '**',

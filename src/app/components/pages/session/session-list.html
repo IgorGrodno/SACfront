@@ -1,14 +1,46 @@
-<h2>Список сессий</h2>
+<h2>Создание новой сессии</h2>
 
+<form (ngSubmit)="createSession()">
+  <label>
+    Название сессии:
+    <input [(ngModel)]="sessionName" name="sessionName" required />
+  </label>
+
+  <label>
+    Дата начала:
+    <input type="date" [(ngModel)]="startDate" name="startDate" required />
+  </label>
+
+  <label>
+    Диапазон номеров студентов:
+    <div class="range-inputs">
+      <input
+        type="number"
+        [(ngModel)]="studentRangeStart"
+        name="rangeStart"
+        placeholder="от"
+        required
+      />
+      <input
+        type="number"
+        [(ngModel)]="studentRangeEnd"
+        name="rangeEnd"
+        placeholder="до"
+        required
+      />
+    </div>
+  </label>
+  <button type="submit">Создать</button>
+</form>
+
+<h2>Список сессий</h2>
 <table class="session-table">
   <thead>
     <tr>
       <th>Название</th>
       <th>Дата начала</th>
-      <th>Дата окончания</th>
       <th>Активна</th>
       <th>Кол-во студентов</th>
-      <th>Номера студентов</th>
       <th>Действия</th>
     </tr>
   </thead>
@@ -21,13 +53,9 @@
       <td>{{ session.name }}</td>
       <td>{{ session.startDate | date : "yyyy-MM-dd" }}</td>
       <td>
-        {{ session.endDate ? (session.endDate | date : "yyyy-MM-dd") : "—" }}
-      </td>
-      <td>
         <input type="checkbox" [checked]="session.active" disabled />
       </td>
       <td>{{ session.studentNumbers.length }}</td>
-      <td>{{ session.studentNumbers.join(", ") }}</td>
       <td>
         <button
           (click)="toggleSessionActive(session, $event)"

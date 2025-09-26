@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SessionList } from './session-list';
+import { CheckExamResult } from './check-exam-result';
 
-describe('SessionList', () => {
-  let component: SessionList;
-  let fixture: ComponentFixture<SessionList>;
+describe('CheckExamResult', () => {
+  let component: CheckExamResult;
+  let fixture: ComponentFixture<CheckExamResult>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SessionList]
+      imports: [CheckExamResult]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SessionList);
+    fixture = TestBed.createComponent(CheckExamResult);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

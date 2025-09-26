@@ -79,7 +79,6 @@ export class DisciplineCreate implements OnDestroy {
           this.availableSkillsForDiscipline = skills;
           this.updateHeights();
         },
-        error: (err) => console.error('Ошибка загрузки навыков:', err),
       });
   }
 
@@ -103,7 +102,6 @@ export class DisciplineCreate implements OnDestroy {
           this.resetForm();
           this.loadSkills();
         },
-        error: (err) => console.error('Ошибка при добавлении дисциплины:', err),
       });
   }
 
@@ -118,7 +116,6 @@ export class DisciplineCreate implements OnDestroy {
           );
           this.updateHeights();
         },
-        error: (err) => console.error('Ошибка удаления дисциплины:', err),
       });
   }
 

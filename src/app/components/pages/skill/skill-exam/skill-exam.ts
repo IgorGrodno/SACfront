@@ -74,7 +74,6 @@ export class SkillExam implements OnInit, OnDestroy {
   private loadSkill(skillId: number): void {
     const sub = this.skillService.getSkill(skillId).subscribe({
       next: (skill) => (this.skill = skill),
-      error: (err) => console.error('Ошибка загрузки навыка:', err),
     });
     this.subs.push(sub);
   }
@@ -85,7 +84,6 @@ export class SkillExam implements OnInit, OnDestroy {
         this.skillSteps = steps;
         this.stepScores = Array(steps.length).fill(0);
       },
-      error: (err) => console.error('Ошибка загрузки шагов навыка:', err),
     });
     this.subs.push(sub);
   }
@@ -99,7 +97,6 @@ export class SkillExam implements OnInit, OnDestroy {
           this.loadStudents();
         }
       },
-      error: (err) => console.error('Ошибка загрузки активных сессий:', err),
     });
     this.subs.push(sub);
   }
@@ -124,7 +121,6 @@ export class SkillExam implements OnInit, OnDestroy {
           this.studentIds = session.studentNumbers;
           this.loadSkillTestResults();
         },
-        error: (err) => console.error('Ошибка загрузки сессии:', err),
       });
     this.subs.push(sub);
   }
@@ -142,8 +138,6 @@ export class SkillExam implements OnInit, OnDestroy {
             (id) => !passedStudents.includes(id)
           );
         },
-        error: (err) =>
-          console.error('Ошибка загрузки результатов экзаменов:', err),
       });
     this.subs.push(sub);
   }
@@ -168,7 +162,6 @@ export class SkillExam implements OnInit, OnDestroy {
 
   submitExam(): void {
     if (!this.canSubmit()) {
-      console.error('Форма заполнена некорректно');
       return;
     }
 
@@ -188,8 +181,6 @@ export class SkillExam implements OnInit, OnDestroy {
         this.resetForm();
         this.loadStudents();
       },
-      error: (err) =>
-        console.error('Ошибка при создании результата экзамена:', err),
     });
     this.subs.push(sub);
   }

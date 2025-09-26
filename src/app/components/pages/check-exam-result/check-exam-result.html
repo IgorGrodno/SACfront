@@ -1,0 +1,60 @@
+<div class="layout">
+  <!-- Сессии -->
+  <div class="card">
+    <h2 class="card-title">📅 Сессии</h2>
+    <ul class="list">
+      <li
+        *ngFor="let s of sessions()"
+        (click)="selectSession(s.id!)"
+        [class.active]="s.id === activeSessionId()"
+        class="list-item"
+      >
+        {{ s.name }} ({{ s.startDate | date:'dd.MM.yyyy' }})
+      </li>
+    </ul>
+  </div>
+
+  <!-- Студенты -->
+  <div class="card">
+    <h2 class="card-title">🎓 Студенты</h2>
+    <ul class="list">
+      <li
+        *ngFor="let st of students()"
+        (click)="selectStudent(st)"
+        [class.active]="st === activeStudentNumber()"
+        class="list-item"
+      >
+        👤 {{ st }}
+      </li>
+      <li *ngIf="students().length === 0" class="empty">
+        Нет студентов с результатами
+      </li>
+    </ul>
+  </div>
+
+  <!-- Результаты -->
+  <div class="card">
+    <h2 class="card-title">📊 Результаты</h2>
+    <ng-container *ngIf="studentResults().length > 0; else noResults">
+      <div *ngFor="let d of uniqueDisciplines()" class="discipline-card">
+        <h3 style="margin-bottom: 0">
+          {{ d }} — средний: {{ getAverageForDiscipline(d) }}%
+        </h3>
+        <table class="skills-table">
+          <tbody>
+            <tr *ngFor="let skill of getSkillsForDiscipline(d)">
+              <td class="skill-name">{{ skill }}</td>
+              <td class="skill-score">
+                {{ getScore(activeStudentNumber() ?? 0, skill) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <ng-template #noResults>
+      <div class="empty">Нет результатов для выбранного студента</div>
+    </ng-template>
+  </div>
+</div>

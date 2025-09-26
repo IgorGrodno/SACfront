@@ -1,0 +1,141 @@
+:host {
+  width: 100%;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f7f8fa;
+  min-height: 100%;
+}
+
+/* Карточка */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e0e0e0;
+}
+
+/* Заголовки */
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Списки */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  border: 1px solid transparent;
+}
+
+.list-item:hover {
+  background: #f0f4ff;
+  transform: translateX(2px);
+}
+
+.list-item.active {
+  background: #e5edff;
+  border-color: #c0d4ff;
+  font-weight: 600;
+}
+
+.list-item-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.list-item-name {
+  color: #333;
+}
+
+.list-item-date {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Пустой список */
+.empty {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #777;
+  padding: 8px;
+}
+
+/* Результаты */
+.result-card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.discipline {
+  color: #444;
+}
+
+.average {
+  background: #eaf2ff;
+  color: #3366cc;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* Шаги */
+.steps {
+  list-style: none;
+  padding-left: 12px;
+  margin: 0;
+}
+
+.step {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.skills-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skill-name {
+  text-align: left;
+  width: 85%;
+}
+
+.skill-score {
+  text-align: right;
+  width: 15%;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}

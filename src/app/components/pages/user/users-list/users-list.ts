@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { ProfileService } from '../../../../services/profile.service';
 import { Profile } from '../../../../interfaces/profile.interface';
 import { forkJoin } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../services/auth.service';
 
 interface UserWithProfile extends User {
   profile?: Profile;
@@ -16,20 +18,29 @@ interface UserWithProfile extends User {
   templateUrl: 'users-list.html',
   styleUrls: ['users-list.css'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
 })
 export class UsersList implements OnInit {
   users: UserWithProfile[] = [];
   allRoles: string[] = ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'];
   changedUsers = new Set<number>();
+  newUser: { username: string; password: string } = {
+    username: '',
+    password: '',
+  };
 
   constructor(
     private userService: UserService,
     private router: Router,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
         // Загружаем профили для каждого пользователя
@@ -44,15 +55,15 @@ export class UsersList implements OnInit {
               profile: profiles[index],
             }));
           },
-          error: (err) =>
-            console.error('Ошибка загрузки профилей пользователей:', err),
         });
       },
-      error: (err) => console.error('Ошибка загрузки пользователей:', err),
     });
   }
 
   toggleRole(user: UserWithProfile, role: string): void {
+    if (!user.roles) {
+      user.roles = [];
+    }
     user.roles = user.roles.includes(role)
       ? user.roles.filter((r) => r !== role)
       : [...user.roles, role];
@@ -76,12 +87,11 @@ export class UsersList implements OnInit {
         );
         this.changedUsers.delete(user.id);
       },
-      error: () => alert('Ошибка при обновлении пользователя'),
     });
   }
 
   hasRole(user: UserWithProfile, role: string): boolean {
-    return user.roles.includes(role);
+    return (user.roles ?? []).includes(role);
   }
 
   deleteUser(userId: number): void {
@@ -93,7 +103,6 @@ export class UsersList implements OnInit {
         this.changedUsers.delete(userId);
         console.log(`Пользователь с ID ${userId} удалён.`);
       },
-      error: (err) => console.error('Ошибка при удалении пользователя:', err),
     });
   }
 
@@ -102,7 +111,30 @@ export class UsersList implements OnInit {
   }
 
   getFullName(user: UserWithProfile): string {
-    if (!user.profile) return user.username; // fallback
-    return `${user.profile.secondName} ${user.profile.firstName} ${user.profile.fatherName}`;
+    const second = user.profile?.secondName ?? '';
+    const first = user.profile?.firstName ?? '';
+    const father = user.profile?.fatherName ?? '';
+
+    const full = [second, first, father].filter(Boolean).join(' ');
+    return full || 'Профиль не заполнен';
+  }
+
+  addUser() {
+    if (!this.newUser.username || !this.newUser.password) {
+      alert('Введите логин и пароль');
+      return;
+    }
+
+    this.authService
+      .register({
+        username: this.newUser.username,
+        password: this.newUser.password,
+      })
+      .subscribe({
+        next: (createdUser) => {
+          this.loadUsers();
+          this.newUser = { username: '', password: '' };
+        },
+      });
   }
 }

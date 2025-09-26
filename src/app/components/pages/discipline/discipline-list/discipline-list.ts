@@ -26,7 +26,6 @@ export class DisciplineList implements OnInit {
   private loadDisciplines(): void {
     this.disciplineService.getDisciplines().subscribe({
       next: (data) => (this.disciplines = data),
-      error: (err) => console.error('Ошибка загрузки дисциплин:', err),
     });
   }
 
@@ -39,7 +38,6 @@ export class DisciplineList implements OnInit {
       next: () => {
         this.disciplines = this.disciplines.filter((d) => d.id !== id);
       },
-      error: (err) => console.error('Ошибка удаления дисциплины:', err),
     });
   }
 }

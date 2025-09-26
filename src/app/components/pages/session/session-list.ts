@@ -1,18 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Session } from '../../../../interfaces/session.interface';
-import { SessionService } from '../../../../services/session.service';
+import { Session } from '../../../interfaces/session.interface';
+import { SessionService } from '../../../services/session.service';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-session-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './session-list.html',
   styleUrls: ['./session-list.css'],
 })
 export class SessionList implements OnInit {
   sessions: Session[] = [];
+  sessionName = '';
+  startDate = '';
+  active = true;
+  studentRangeStart: number | null = null;
+  studentRangeEnd: number | null = null;
 
   constructor(private sessionService: SessionService, private router: Router) {}
 
@@ -23,7 +29,6 @@ export class SessionList implements OnInit {
   loadSessions(): void {
     this.sessionService.getAllSessions().subscribe({
       next: (data) => (this.sessions = data),
-      error: (err) => console.error('Ошибка загрузки сессий:', err),
     });
   }
 
@@ -35,7 +40,6 @@ export class SessionList implements OnInit {
         this.sessions = this.sessions.filter((s) => s.id !== sessionId);
         console.log(`Сессия с ID ${sessionId} удалена`);
       },
-      error: (err) => console.error('Ошибка при удалении сессии:', err),
     });
   }
 
@@ -63,5 +67,57 @@ export class SessionList implements OnInit {
 
   viewSessionDetails(sessionId: number): void {
     this.router.navigate(['/test-result', sessionId]);
+  }
+
+  createSession(): void {
+    if (!this.validateForm()) return;
+
+    const studentNumbers = this.generateStudentNumbers();
+
+    const newSession: Session = {
+      name: this.sessionName.trim(),
+      startDate: this.startDate,
+      endDate: undefined,
+      active: this.active,
+      studentNumbers,
+    };
+
+    this.sessionService.createSession(newSession).subscribe({
+      next: () => {
+        alert('Сессия успешно создана!');
+        this.resetForm();
+        this.loadSessions();
+      },
+    });
+  }
+
+  private validateForm(): boolean {
+    if (
+      !this.sessionName.trim() ||
+      !this.startDate ||
+      this.studentRangeStart === null ||
+      this.studentRangeEnd === null ||
+      this.studentRangeStart > this.studentRangeEnd
+    ) {
+      alert('Пожалуйста, введите корректные данные.');
+      return false;
+    }
+    return true;
+  }
+
+  private generateStudentNumbers(): number[] {
+    const numbers: number[] = [];
+    for (let i = this.studentRangeStart!; i <= this.studentRangeEnd!; i++) {
+      numbers.push(i);
+    }
+    return numbers;
+  }
+
+  private resetForm(): void {
+    this.sessionName = '';
+    this.startDate = '';
+    this.active = true;
+    this.studentRangeStart = null;
+    this.studentRangeEnd = null;
   }
 }

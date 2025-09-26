@@ -37,9 +37,6 @@ export class Login {
         alert('OK');
         this.navigateTo('');
       },
-      error: (err) => {
-        alert('Ошибка входа: ' + err.error.message);
-      },
     });
   }
 

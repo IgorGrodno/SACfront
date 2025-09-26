@@ -36,7 +36,6 @@ export class SkillList implements OnInit {
 
     skills$.subscribe({
       next: (skills) => (this.skills = skills),
-      error: (err) => console.error('Ошибка загрузки навыков:', err),
     });
   }
 
@@ -52,7 +51,6 @@ export class SkillList implements OnInit {
       next: () => {
         this.skills = this.skills.filter((s) => s.id !== id);
       },
-      error: (err) => console.error('Ошибка удаления навыка:', err),
     });
   }
 }

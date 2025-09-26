@@ -31,15 +31,12 @@ export class DisciplineListExam implements OnInit {
           this.loadUserDisciplines(this.currentUser.id);
         }
       },
-      error: (err) => console.error('Ошибка получения пользователя:', err),
     });
   }
 
   private loadUserDisciplines(userId: number): void {
     this.disciplineService.getUserDisciplines(userId).subscribe({
       next: (disciplines) => (this.disciplineList = disciplines),
-      error: (err) =>
-        console.error('Ошибка загрузки дисциплин пользователя:', err),
     });
   }
 

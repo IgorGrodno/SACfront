@@ -99,7 +99,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
             this.skillSteps = skill.steps ?? [];
             this.triggerHeightUpdate();
           },
-          error: (err) => console.error('Ошибка загрузки навыка:', err),
         });
     }
   }
@@ -113,7 +112,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
           this.allSteps = data;
           this.updateAvailableSteps();
         },
-        error: (err) => console.error('Ошибка загрузки шагов:', err),
       });
   }
 
@@ -143,7 +141,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => this.loadSteps(),
-        error: (err) => console.error('Ошибка добавления шага:', err),
       });
   }
 
@@ -156,7 +153,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
           this.skillSteps = this.skillSteps.filter((s) => s.id !== id);
           this.updateAvailableSteps();
         },
-        error: (err) => console.error('Ошибка удаления шага:', err),
       });
   }
 
@@ -196,7 +192,6 @@ export class SkillEdit implements OnInit, AfterViewInit, OnDestroy {
           console.log('Навык обновлён');
           this.loadSteps();
         },
-        error: (err) => console.error('Ошибка при обновлении навыка:', err),
       });
   }
 

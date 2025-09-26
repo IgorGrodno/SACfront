@@ -4,7 +4,6 @@ import {
   Component,
   ElementRef,
   Input,
-  NgZone,
   QueryList,
   ViewChild,
   ViewChildren,
@@ -41,6 +40,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
   @Input() userId!: number;
   userProfile?: Profile;
   isAdmin = false;
+  user!: User; // теперь будем хранить полный объект пользователя
 
   username = '';
   newPassword = '';
@@ -86,6 +86,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
         }),
         switchMap(({ profile, user }) => {
           this.userProfile = profile;
+          this.user = user; // сохраняем полный объект пользователя
           this.username = user.username;
 
           this.firstName = profile.firstName || '';
@@ -115,38 +116,40 @@ export class ProfilePage implements OnInit, AfterViewInit {
   saveProfile(): void {
     if (!this.userProfile) return;
 
+    // обновляем профиль
     this.userProfile.firstName = this.firstName.trim();
     this.userProfile.secondName = this.secondName.trim();
     this.userProfile.fatherName = this.fatherName.trim();
+
+    // обновляем загруженного юзера (меняем только логин/пароль)
+    this.user.username = this.username.trim();
+    if (this.newPassword.trim()) {
+      this.user.password = this.newPassword.trim();
+    }
 
     const profileRequest = this.profileService.updateProfile(
       this.userProfile,
       this.userDisciplines
     );
 
-    if (this.isAdmin && this.userProfile) {
-      // Ensure roles are present for User object
-      const user: User = {
-        id: this.userId,
-        username: this.username.trim(),
-        password: this.newPassword.trim() || undefined,
-        roles: (this.userProfile as any).roles || [], // fallback if roles are not present
-      };
-
-      forkJoin([profileRequest, this.userService.updateUser(user)]).subscribe({
+    if (this.isAdmin) {
+      forkJoin([
+        profileRequest,
+        this.userService.updateUser(this.user),
+      ]).subscribe({
         next: () => {
-          console.log('Профиль и пользователь обновлены');
           this.newPassword = '';
+          alert('Профиль и пользователь успешно обновлены.');
         },
-        error: (err) => console.error('Ошибка при обновлении профиля', err),
+        error: () => alert('Ошибка при обновлении профиля'),
       });
     } else {
       profileRequest.subscribe({
         next: () => {
-          console.log('Профиль обновлен');
           this.newPassword = '';
+          alert('Профиль успешно обновлён.');
         },
-        error: (err) => console.error('Ошибка при обновлении профиля', err),
+        error: () => alert('Ошибка при обновлении профиля'),
       });
     }
   }
