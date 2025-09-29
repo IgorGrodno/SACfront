@@ -5,7 +5,7 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { StorageService } from '../services/storage.service';
+import { StorageService } from '../shared/services/storage.service';
 import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 

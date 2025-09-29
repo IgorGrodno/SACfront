@@ -1,109 +1,124 @@
 import { Routes } from '@angular/router';
-import { Login } from './components/pages/login/login';
-import { UsersList } from './components/pages/user/users-list/users-list';
-import { SessionList } from './components/pages/session/session-list';
-import { SkillCreate } from './components/pages/skill/skill-create/skill-create';
-import { SkillList } from './components/pages/skill/skill-list/skill-list';
-import { AdminGuard } from './guards/admin-guard';
 import { AuthGuard } from './guards/auth-guard';
-import { ProfilePage } from './components/pages/profile/profile';
-import { DisciplineCreate } from './components/pages/discipline/discipline-create/discipline-create';
-import { DisciplineList } from './components/pages/discipline/discipline-list/discipline-list';
-import { DisciplineListExam } from './components/pages/discipline/discipline-list-exam/discipline-list-exam';
-import { SkillExam } from './components/pages/skill/skill-exam/skill-exam';
-import { SkillEdit } from './components/pages/skill/skill-edit/skill-edit';
-import { TestResult } from './components/pages/test-result/test-result';
-import { DisciplineEdit } from './components/pages/discipline/discipline-edit/discipline-edit';
-import { CheckExamResult } from './components/pages/check-exam-result/check-exam-result';
+import { AdminGuard } from './guards/admin-guard';
 
 export const routes: Routes = [
   {
     path: 'exam',
-    component: DisciplineListExam,
+    loadComponent: () =>
+      import(
+        './features/discipline/discipline-list-exam/discipline-list-exam'
+      ).then((m) => m.DisciplineListExam),
     canActivate: [AuthGuard],
   },
   {
     path: 'test-result',
-    component: TestResult,
+    loadComponent: () =>
+      import('./features/test-result/test-result/test-result').then(
+        (m) => m.TestResult
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'test-result/:id',
-    component: TestResult,
+    loadComponent: () =>
+      import('./features/test-result/test-result/test-result').then(
+        (m) => m.TestResult
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'discipline-create',
-    component: DisciplineCreate,
+    loadComponent: () =>
+      import('./features/discipline/discipline-create/discipline-create').then(
+        (m) => m.DisciplineCreate
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'discipline-edit/:id',
-    component: DisciplineEdit,
+    loadComponent: () =>
+      import('./features/discipline/discipline-edit/discipline-edit').then(
+        (m) => m.DisciplineEdit
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'discipline-list',
-    component: DisciplineList,
+    loadComponent: () =>
+      import('./features/discipline/discipline-list/discipline-list').then(
+        (m) => m.DisciplineList
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'profile',
-    component: ProfilePage,
+    loadComponent: () =>
+      import('./features/user/profile/profile').then((m) => m.ProfilePage),
     canActivate: [AuthGuard],
   },
   {
     path: 'profile/:id',
-    component: ProfilePage,
+    loadComponent: () =>
+      import('./features/user/profile/profile').then((m) => m.ProfilePage),
     canActivate: [AdminGuard],
   },
   {
     path: 'login',
-    component: Login,
+    loadComponent: () => import('./features/login/login').then((m) => m.Login),
   },
   {
     path: 'users-list',
-    component: UsersList,
+    loadComponent: () =>
+      import('./features/user/users-list/users-list').then((m) => m.UsersList),
     canActivate: [AdminGuard],
   },
   {
     path: 'session-list',
-    component: SessionList,
+    loadComponent: () =>
+      import('./features/session/session-list/session-list').then(
+        (m) => m.SessionList
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'skill-create',
-    component: SkillCreate,
+    loadComponent: () =>
+      import('./features/skill/skill-create/skill-create').then(
+        (m) => m.SkillCreate
+      ),
     canActivate: [AdminGuard],
   },
   {
     path: 'skill-edit/:id',
-    component: SkillEdit,
+    loadComponent: () =>
+      import('./features/skill/skill-edit/skill-edit').then((m) => m.SkillEdit),
     canActivate: [AdminGuard],
   },
   {
     path: 'skill-list',
-    component: SkillList,
+    loadComponent: () =>
+      import('./features/skill/skill-list/skill-list').then((m) => m.SkillList),
     canActivate: [AuthGuard],
   },
   {
     path: 'skill-list/:id',
-    component: SkillList,
+    loadComponent: () =>
+      import('./features/skill/skill-list/skill-list').then((m) => m.SkillList),
     canActivate: [AuthGuard],
   },
   {
     path: 'skill-exam/:id',
-    component: SkillExam,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'profile/:id',
-    component: ProfilePage,
+    loadComponent: () =>
+      import('./features/skill/skill-exam/skill-exam').then((m) => m.SkillExam),
     canActivate: [AuthGuard],
   },
   {
     path: '',
-    component: CheckExamResult,
+    loadComponent: () =>
+      import('./features/check-exam-result/check-exam-result').then(
+        (m) => m.CheckExamResult
+      ),
   },
   {
     path: '**',

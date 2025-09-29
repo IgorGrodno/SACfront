@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';
 import { User } from './interfaces/user.interface';
-import { AuthService } from './services/auth.service';
-import { StorageService } from './services/storage.service';
-import { Header } from './components/header/header';
-import { Footer } from './components/footer/footer';
+import { AuthService } from './shared/services/auth.service';
+import { StorageService } from './shared/services/storage.service';
+import { Header } from './features/header/header';
+import { Footer } from './features/footer/footer';
 
 @Component({
   selector: 'app-root',

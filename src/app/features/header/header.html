@@ -1,0 +1,25 @@
+<a href="/"
+  ><img src="assets/SACicon.png" class="header-image clickable" alt="SACicon"
+/></a>
+
+<nav *ngIf="entries.length > 0" class="menuItems">
+  <p
+    *ngFor="let entry of entries"
+    class="clickable"
+    (click)="navigateTo(entry[1])"
+  >
+    {{ entry[0] }}
+  </p>
+</nav>
+
+<div class="userNameGroup">
+  <div *ngIf="currentUser; then userNameTpl; else loginTpl"></div>
+
+  <ng-template #userNameTpl>
+    <p class="clickable" (click)="logout()">Выйти</p>
+  </ng-template>
+
+  <ng-template #loginTpl>
+    <p class="clickable" (click)="navigateTo('/login')">Войти</p>
+  </ng-template>
+</div>

@@ -6,7 +6,7 @@ import {
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
-import { StorageService } from '../services/storage.service';
+import { StorageService } from '../shared/services/storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminGuard implements CanActivate {
