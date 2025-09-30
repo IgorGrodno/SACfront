@@ -1,26 +1,13 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { TestResultFacade } from './test-result.facade';
-import { TestResultView } from './test-result.model';
+import {
+  DisciplineView,
+  StudentView,
+  TestResultView,
+} from './test-result.model';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-
-interface SkillView {
-  name: string;
-  avg: number;
-}
-
-interface DisciplineView {
-  name: string;
-  avg: number;
-  skills: SkillView[];
-}
-
-interface StudentView {
-  id: number;
-  avg: number;
-  scores: Record<string, number | null>;
-}
 
 @Component({
   selector: 'app-test-result',
