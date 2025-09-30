@@ -14,8 +14,8 @@ export const routes: Routes = [
   {
     path: 'test-result/:id',
     loadComponent: () =>
-      import('./features/session/test-result/test-result').then(
-        (m) => m.TestResult
+      import('./features/session/test-result/test-result.component').then(
+        (m) => m.TestResultComponent
       ),
     canActivate: [AdminGuard],
   },

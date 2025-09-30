@@ -1,0 +1,80 @@
+<div class="results-container">
+  <ng-container *ngIf="isLoading$ | async; else loaded">
+    <p>Загрузка...</p>
+  </ng-container>
+
+  <ng-template #loaded>
+    <div class="controls">
+      <label>
+        От:
+        <input
+          type="number"
+          (input)="onFromChange($event.target.valueAsNumber || null)"
+        />
+      </label>
+      <label>
+        До:
+        <input
+          type="number"
+          (input)="onToChange($event.target.valueAsNumber || null)"
+        />
+      </label>
+
+      <!-- Экспорт -->
+      <ng-container *ngIf="results$ | async as results">
+        <button (click)="exportToExcel(results)">Экспорт в Excel</button>
+      </ng-container>
+    </div>
+
+    <ng-container *ngIf="uniqueDisciplines$ | async as disciplines">
+      <ng-container *ngIf="filteredStudents$ | async as students">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Студент</th>
+              <ng-container *ngFor="let discipline of disciplines">
+                <th [attr.colspan]="discipline.skills.length || 1">
+                  {{ discipline.name }} ({{ discipline.avg }}%)
+                </th>
+              </ng-container>
+              <th rowspan="2">Среднее по студенту</th>
+            </tr>
+            <tr>
+              <ng-container *ngFor="let discipline of disciplines">
+                <ng-container
+                  *ngIf="discipline.skills.length > 0; else emptyDiscipline"
+                >
+                  <th *ngFor="let skill of discipline.skills">
+                    {{ skill.name }} ({{ skill.avg }}%)
+                  </th>
+                </ng-container>
+                <ng-template #emptyDiscipline>
+                  <th>-</th>
+                </ng-template>
+              </ng-container>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let student of students">
+              <td>{{ student.id }}</td>
+              <ng-container *ngFor="let discipline of disciplines">
+                <ng-container
+                  *ngIf="discipline.skills.length > 0; else emptySkillRow"
+                >
+                  <td *ngFor="let skill of discipline.skills">
+                    {{ student.scores[skill.name] ?? "-" }}
+                  </td>
+                </ng-container>
+                <ng-template #emptySkillRow>
+                  <td>-</td>
+                </ng-template>
+              </ng-container>
+              <td>{{ student.avg }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+</div>
