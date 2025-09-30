@@ -12,17 +12,9 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'test-result',
-    loadComponent: () =>
-      import('./features/test-result/test-result/test-result').then(
-        (m) => m.TestResult
-      ),
-    canActivate: [AdminGuard],
-  },
-  {
     path: 'test-result/:id',
     loadComponent: () =>
-      import('./features/test-result/test-result/test-result').then(
+      import('./features/session/test-result/test-result').then(
         (m) => m.TestResult
       ),
     canActivate: [AdminGuard],

@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { Session } from '../../interfaces/session.interface';
 import { DisciplineService } from '../discipline/discipline.service';
 import { SessionService } from '../session/session.service';
-import { SkillTestResultsService } from '../test-result/skill-test-results.service';
+import { SkillTestResultsService } from '../session/skill-test-results.service';
 
 interface ResultView {
   studentId: number;

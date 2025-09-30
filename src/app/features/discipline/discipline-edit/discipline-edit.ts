@@ -12,7 +12,7 @@ import {
   ViewChildren,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -59,7 +59,8 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
     private skillService: SkillService,
     private disciplineService: DisciplineService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -145,8 +146,7 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveDiscipline(): void {
-    if (!this.newDisciplineName.trim() || this.disciplineSkills.length === 0)
-      return;
+    if (!this.newDisciplineName.trim()) return;
 
     const disciplineToSave: Discipline = {
       id: this.discipline?.id ?? -1,
@@ -166,16 +166,16 @@ export class DisciplineEdit implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  removeDiscipline(id: number): void {
+  removeDiscipline(): void {
+    if (!confirm('Вы действительно хотите удалить эту дисциплину?')) return;
+    if (this.discipline?.id === undefined) return;
+    const id = this.discipline.id;
     this.disciplineService
       .deleteDiscipline(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.availableDisciplines = this.availableDisciplines.filter(
-            (d) => d.id !== id
-          );
-          this.triggerHeightUpdate();
+          this.router.navigate(['/discipline-list']);
         },
       });
   }

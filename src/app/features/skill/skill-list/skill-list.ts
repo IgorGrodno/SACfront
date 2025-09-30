@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SkillService } from '../skill.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +27,8 @@ export class SkillList implements OnInit {
     private skillService: SkillService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +44,7 @@ export class SkillList implements OnInit {
 
     skills$.subscribe({
       next: (skills) => (this.skills = skills),
+      complete: () => this.cdr.markForCheck(), // уведомляем Angular о необходимости перерисовать
     });
   }
 

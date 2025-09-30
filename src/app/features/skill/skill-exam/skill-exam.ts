@@ -1,22 +1,21 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { SkillService } from '../skill.service';
+import { SessionService } from '../../session/session.service';
+import { SkillTestResultsService } from '../../session/skill-test-results.service';
+import { ExamService } from '../exam.service';
+import { AuthService } from '../../../shared/services/auth.service';
 import { Session } from '../../../interfaces/session.interface';
 import { Skill } from '../../../interfaces/skill.interface';
 import { SkillStep } from '../../../interfaces/skillStep.interface';
-import { AuthService } from '../../../shared/services/auth.service';
-import { SessionService } from '../../session/session.service';
-import { SkillTestResultsService } from '../../test-result/skill-test-results.service';
-import { ExamService } from '../exam.service';
 
 @Component({
   selector: 'app-skill-exam',
@@ -24,127 +23,103 @@ import { ExamService } from '../exam.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './skill-exam.html',
   styleUrls: ['./skill-exam.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
 })
-export class SkillExam implements OnInit, OnDestroy {
+export class SkillExam implements OnInit {
   skill?: Skill;
   skillSteps: SkillStep[] = [];
   stepScores: number[] = [];
 
+  activeSessionList: Session[] = [];
+  currentSessionId?: number;
+
   studentIds: number[] = [];
   filteredStudents: number[] = [];
-  activeSessionList: Session[] = [];
-
-  currentSessionId?: number;
-  currentTeacherId?: number;
   currentStudentId?: number;
-
-  score = 0;
   studentSearch = '';
 
-  private subs: Subscription[] = [];
+  currentTeacherId?: number;
+  score = 0;
 
   constructor(
-    private skillService: SkillService,
     private route: ActivatedRoute,
+    private skillService: SkillService,
     private sessionService: SessionService,
-    private authService: AuthService,
+    private skillTestResultsService: SkillTestResultsService,
     private examService: ExamService,
-    private skillTestResultsService: SkillTestResultsService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    const skillId = this.getSkillIdFromRoute();
+    const skillId = Number(this.route.snapshot.paramMap.get('id'));
     if (!skillId) return;
 
     this.loadSkill(skillId);
     this.loadSkillSteps(skillId);
     this.loadActiveSessions();
-    this.subs.push(
-      this.authService.currentUser$.subscribe(
-        (user) => (this.currentTeacherId = user?.id)
-      )
-    );
-  }
 
-  ngOnDestroy(): void {
-    this.subs.forEach((sub) => sub.unsubscribe());
-  }
-
-  private getSkillIdFromRoute(): number | undefined {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    return !isNaN(id) ? id : undefined;
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentTeacherId = user?.id;
+    });
   }
 
   private loadSkill(skillId: number): void {
-    const sub = this.skillService.getSkill(skillId).subscribe({
-      next: (skill) => (this.skill = skill),
+    this.skillService.getSkill(skillId).subscribe((skill) => {
+      this.skill = skill;
+      this.cdr.markForCheck();
     });
-    this.subs.push(sub);
   }
 
   private loadSkillSteps(skillId: number): void {
-    const sub = this.skillService.getSkillSteps(skillId).subscribe({
-      next: (steps) => {
-        this.skillSteps = steps;
-        this.stepScores = Array(steps.length).fill(0);
-      },
+    this.skillService.getSkillSteps(skillId).subscribe((steps) => {
+      this.skillSteps = steps;
+      this.stepScores = Array(steps.length).fill(0);
+      this.cdr.markForCheck();
     });
-    this.subs.push(sub);
   }
 
   private loadActiveSessions(): void {
-    const sub = this.sessionService.getActiveSessions().subscribe({
-      next: (sessions) => {
-        this.activeSessionList = sessions;
-        if (sessions.length === 1) {
-          this.currentSessionId = sessions[0].id;
-          this.loadStudents();
-        }
-      },
+    this.sessionService.getActiveSessions().subscribe((sessions) => {
+      this.activeSessionList = sessions;
+      if (sessions.length === 1) {
+        this.currentSessionId = sessions[0].id;
+        this.loadStudents();
+      }
+      this.cdr.markForCheck();
     });
-    this.subs.push(sub);
   }
 
   onSessionChange(): void {
     this.currentStudentId = undefined;
-    if (this.currentSessionId !== undefined) {
-      this.loadStudents();
-    } else {
-      this.studentIds = [];
-      this.filteredStudents = [];
-    }
+    this.studentSearch = '';
+    this.loadStudents();
   }
 
   private loadStudents(): void {
     if (!this.currentSessionId) return;
 
-    const sub = this.sessionService
+    this.sessionService
       .getSessionById(this.currentSessionId)
-      .subscribe({
-        next: (session) => {
-          this.studentIds = session.studentNumbers;
-          this.loadSkillTestResults();
-        },
+      .subscribe((session) => {
+        this.studentIds = session.studentNumbers;
+        this.loadSkillTestResults();
+        this.cdr.markForCheck();
       });
-    this.subs.push(sub);
   }
 
   private loadSkillTestResults(): void {
     if (!this.currentSessionId) return;
-    const sub = this.skillTestResultsService
+    this.skillTestResultsService
       .getBySessionId(this.currentSessionId)
-      .subscribe({
-        next: (results) => {
-          const passedStudents = results
-            .filter((r) => r.skillId === this.skill?.id)
-            .map((r) => r.studentId);
-          this.filteredStudents = this.studentIds.filter(
-            (id) => !passedStudents.includes(id)
-          );
-        },
+      .subscribe((results) => {
+        const passedStudents = results
+          .filter((r) => r.skillId === this.skill?.id)
+          .map((r) => r.studentId);
+        this.filteredStudents = this.studentIds.filter(
+          (id) => !passedStudents.includes(id)
+        );
       });
-    this.subs.push(sub);
   }
 
   filterStudents(): void {
@@ -153,77 +128,36 @@ export class SkillExam implements OnInit, OnDestroy {
       ? this.studentIds.filter((id) => id.toString().includes(query))
       : [...this.studentIds];
 
-    this.currentStudentId =
-      this.filteredStudents.length === 1 ? this.filteredStudents[0] : undefined;
-  }
-
-  canSubmit(): boolean {
-    return (
-      this.currentSessionId !== undefined &&
-      this.currentStudentId !== undefined &&
-      this.stepScores.length === this.skillSteps.length
-    );
-  }
-
-  submitExam(): void {
-    if (!this.canSubmit()) {
-      return;
+    if (this.filteredStudents.length === 1) {
+      this.currentStudentId = this.filteredStudents[0];
     }
-
-    const skillTestResult = {
-      id: -1,
-      sessionId: this.currentSessionId!,
-      studentId: this.currentStudentId!,
-      teacherId: this.currentTeacherId!,
-      skillId: this.skill?.id ?? -1,
-      stepScores: this.getStepScoresPayload(),
-      resultDate: new Date().toISOString(),
-    };
-
-    const sub = this.examService.createResult(skillTestResult).subscribe({
-      next: () => {
-        alert('Результат экзамена успешно создан');
-        this.resetForm();
-        this.loadStudents();
-      },
-    });
-    this.subs.push(sub);
-  }
-
-  private getStepScoresPayload() {
-    return this.skillSteps.map((step, i) => ({
-      stepId: step.id,
-      score: this.stepScores[i],
-    }));
   }
 
   getStep(index: number): number {
-    return this.clamp(this.stepScores[index] ?? 0, 0, 2);
+    return this.stepScores[index] ?? 0;
   }
 
   setStep(index: number, value: number): void {
     this.stepScores[index] = this.clamp(value, 0, 2);
-    this.score = this.calculateScore();
+    this.calculateScore();
   }
 
   incStep(index: number): void {
     this.setStep(index, this.getStep(index) + 1);
   }
+
   decStep(index: number): void {
     this.setStep(index, this.getStep(index) - 1);
   }
 
   onStepKeyPress(event: KeyboardEvent): void {
-    const allowed = [
-      '0',
-      '1',
-      '2',
-      'Backspace',
-      'ArrowLeft',
-      'ArrowRight',
-      'Tab',
-    ];
-    if (!allowed.includes(event.key)) event.preventDefault();
+    if (
+      !['0', '1', '2', 'Backspace', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(
+        event.key
+      )
+    ) {
+      event.preventDefault();
+    }
   }
 
   onStepBlur(index: number, event: Event): void {
@@ -233,15 +167,37 @@ export class SkillExam implements OnInit, OnDestroy {
     input.value = this.getStep(index).toString();
   }
 
-  private calculateScore(): number {
+  private calculateScore(): void {
     const max = this.skillSteps.length * 2;
-    const total = this.stepScores.reduce((sum, score, i) => {
-      const step = this.skillSteps[i];
-      let s = score;
-      if (s === 0 && step.mistakePossible) s -= 1;
-      return sum + s;
-    }, 0);
-    return Math.round((Math.max(total, 0) / max) * 100);
+    const total = this.stepScores.reduce((a, b) => a + b, 0);
+    this.score = Math.round((total / max) * 100);
+  }
+
+  canSubmit(): boolean {
+    return !!this.currentSessionId && !!this.currentStudentId;
+  }
+
+  submitExam(): void {
+    if (!this.canSubmit()) return;
+
+    const payload = {
+      id: -1,
+      sessionId: this.currentSessionId!,
+      studentId: this.currentStudentId!,
+      teacherId: this.currentTeacherId!,
+      skillId: this.skill?.id ?? -1,
+      stepScores: this.skillSteps.map((s, i) => ({
+        stepId: s.id,
+        score: this.stepScores[i],
+      })),
+      resultDate: new Date().toISOString(),
+    };
+
+    this.examService.createResult(payload).subscribe(() => {
+      alert('Результат успешно создан');
+      this.resetForm();
+      this.loadStudents();
+    });
   }
 
   private resetForm(): void {
@@ -252,7 +208,6 @@ export class SkillExam implements OnInit, OnDestroy {
   }
 
   private clamp(value: number, min: number, max: number): number {
-    const n = Number(value);
-    return Math.max(min, Math.min(max, isNaN(n) ? min : n));
+    return Math.max(min, Math.min(max, value));
   }
 }

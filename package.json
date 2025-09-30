@@ -2,12 +2,12 @@
   "name": "sacfront",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
     "start": "ng serve",
-    "serve:tunnel": "concurrently \"ng serve\" \"lt --port 4200 --subdomain sacfront\"",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "build:prod": "ng build --configuration production",
+    "lint": "eslint ./src --ext .ts,.html",
+    "test": "ng test --watch=false",
+    "e2e": "cypress open"
   },
   "private": true,
   "dependencies": {

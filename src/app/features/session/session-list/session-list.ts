@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Session } from '../../../interfaces/session.interface';
 import { Router } from '@angular/router';
@@ -21,7 +26,11 @@ export class SessionList implements OnInit {
   studentRangeStart: number | null = null;
   studentRangeEnd: number | null = null;
 
-  constructor(private sessionService: SessionService, private router: Router) {}
+  constructor(
+    private sessionService: SessionService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadSessions();
@@ -29,7 +38,11 @@ export class SessionList implements OnInit {
 
   loadSessions(): void {
     this.sessionService.getAllSessions().subscribe({
-      next: (data) => (this.sessions = data),
+      next: (data) => {
+        this.sessions = data;
+        this.cdr.markForCheck(); // << ключевой момент для OnPush
+      },
+      error: (err) => console.error('Ошибка загрузки сессий:', err),
     });
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -23,7 +23,6 @@ interface TestResultView {
   skillName: string;
   disciplineName: string;
   studentId: number;
-  teacherName: string;
   score: number;
   resultDate: Date;
 }
@@ -34,7 +33,6 @@ interface TestResultView {
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './test-result.html',
   styleUrls: ['./test-result.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TestResult implements OnInit {
   results: TestResultView[] = [];
@@ -105,9 +103,8 @@ export class TestResult implements OnInit {
     try {
       const sessionIds = [...new Set(data.map((r) => r.sessionId))];
       const skillIds = [...new Set(data.map((r) => r.skillId))];
-      const teacherIds = [...new Set(data.map((r) => r.teacherId))];
 
-      const [sessions, skills, teachers, disciplines] = await Promise.all([
+      const [sessions, skills, disciplines] = await Promise.all([
         Promise.all(
           sessionIds.map((id) =>
             firstValueFrom(this.sessionService.getSessionById(id))
@@ -116,13 +113,13 @@ export class TestResult implements OnInit {
         Promise.all(
           skillIds.map((id) => firstValueFrom(this.skillService.getSkill(id)))
         ),
-        Promise.all(
-          teacherIds.map((id) =>
-            firstValueFrom(this.profileService.getProfile(id))
-          )
-        ),
-        firstValueFrom(this.disciplineService.getDisciplines()),
+        firstValueFrom(this.disciplineService.getDisciplines()) as Promise<
+          { id: number; name: string; skills: { id: number; name: string }[] }[]
+        >,
       ]);
+
+      // Declare and initialize the skillToDisciplineMap
+      const skillToDisciplineMap = new Map<number, string>();
 
       const sessionMap = new Map(
         sessionIds.map((id, i) => [id, sessions[i]?.name ?? ''])
@@ -130,20 +127,15 @@ export class TestResult implements OnInit {
       const skillMap = new Map(
         skillIds.map((id, i) => [id, skills[i] ?? null])
       );
-      const teacherMap = new Map(
-        teacherIds.map((id, i) => [
-          id,
-          teachers[i]
-            ? `${teachers[i].firstName ?? ''} ${teachers[i].secondName ?? ''} ${
-                teachers[i].fatherName ?? ''
-              }`.trim()
-            : '',
-        ])
-      );
-
-      const skillToDisciplineMap = new Map<number, string>();
-      disciplines.forEach((d: { name: string; skills?: { id: number }[] }) =>
-        d.skills?.forEach((s) => skillToDisciplineMap.set(s.id, d.name))
+      (disciplines ?? []).forEach(
+        (d: {
+          id: number;
+          name: string;
+          skills: { id: number; name: string }[];
+        }) =>
+          d.skills?.forEach((s: { id: number; name: string }) =>
+            skillToDisciplineMap.set(s.id, d.name)
+          )
       );
 
       this.results = data
@@ -158,7 +150,6 @@ export class TestResult implements OnInit {
             skillName: skill?.name ?? '',
             disciplineName,
             studentId: r.studentId,
-            teacherName: teacherMap.get(r.teacherId) || '',
             score: this.calculateScore(r.stepScores),
             resultDate: new Date(r.resultDate),
           };

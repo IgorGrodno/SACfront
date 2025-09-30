@@ -20,7 +20,8 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { forkJoin, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../../shared/services/auth.service';
 import { Discipline } from '../../../interfaces/discipline.interface';
@@ -42,7 +43,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
   @Input() userId!: number;
   userProfile?: Profile;
   isAdmin = false;
-  user!: User; // теперь будем хранить полный объект пользователя
+  user!: User;
 
   username = '';
   newPassword = '';
@@ -61,8 +62,8 @@ export class ProfilePage implements OnInit, AfterViewInit {
   availableSkillElements!: QueryList<ElementRef>;
   @ViewChildren('userSkillRef') userSkillElements!: QueryList<ElementRef>;
 
-  @ViewChild('availableList') availableList!: CdkDropList;
-  @ViewChild('userList') userList!: CdkDropList;
+  @ViewChild('availableList') availableList?: CdkDropList;
+  @ViewChild('userList') userList?: CdkDropList;
 
   constructor(
     private authService: AuthService,
@@ -74,6 +75,7 @@ export class ProfilePage implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('ProfilePage ngOnInit');
     this.isAdmin = this.authService.hasRole('ROLE_ADMIN');
 
     this.route.params
@@ -81,49 +83,86 @@ export class ProfilePage implements OnInit, AfterViewInit {
         switchMap((params) => {
           this.userId =
             +params['id'] || this.authService.getCurrentUser()?.id || 0;
+          console.log('Resolved userId =', this.userId);
+
           return forkJoin({
-            profile: this.profileService.getProfile(this.userId),
-            user: this.userService.getUserById(this.userId),
+            profile: this.profileService.getProfile(this.userId).pipe(
+              catchError((err) => {
+                console.error('getProfile error', err);
+                return of(undefined as Profile | undefined);
+              })
+            ),
+            user: this.userService.getUserById(this.userId).pipe(
+              catchError((err) => {
+                console.error('getUserById error', err);
+                return of(undefined as User | undefined);
+              })
+            ),
           });
         }),
         switchMap(({ profile, user }) => {
           this.userProfile = profile;
-          this.user = user; // сохраняем полный объект пользователя
-          this.username = user.username;
+          if (user) {
+            this.user = user;
+            this.username = user.username;
+          } else {
+            // fallback пустой объект, чтобы избежать ошибок
+            this.user = {} as User;
+          }
 
-          this.firstName = profile.firstName || '';
-          this.secondName = profile.secondName || '';
-          this.fatherName = profile.fatherName || '';
+          this.firstName = this.userProfile?.firstName ?? '';
+          this.secondName = this.userProfile?.secondName ?? '';
+          this.fatherName = this.userProfile?.fatherName ?? '';
+
+          // если профиля нет — вернём пустые массивы, чтобы forkJoin не провалился
+          if (!this.userProfile?.id) {
+            return of({ userDisciplines: [], availableDisciplines: [] });
+          }
 
           return forkJoin({
-            userDisciplines: this.disciplineService.getUserDisciplines(
-              profile.id
+            userDisciplines: this.disciplineService
+              .getUserDisciplines(this.userProfile.id)
+              .pipe(
+                catchError((err) => {
+                  console.error('getUserDisciplines error', err);
+                  return of([] as Discipline[]);
+                })
+              ),
+            availableDisciplines: this.disciplineService.getDisciplines().pipe(
+              catchError((err) => {
+                console.error('getDisciplines error', err);
+                return of([] as Discipline[]);
+              })
             ),
-            availableDisciplines: this.disciplineService.getDisciplines(),
           });
         })
       )
       .subscribe({
         next: ({ userDisciplines, availableDisciplines }) => {
-          this.userDisciplines = userDisciplines;
-          this.availableDisciplines = availableDisciplines.filter(
-            (d) => !userDisciplines.some((ud) => ud.id === d.id)
+          this.userDisciplines = userDisciplines || [];
+          this.availableDisciplines = (availableDisciplines || []).filter(
+            (d) => !this.userDisciplines.some((ud) => ud.id === d.id)
           );
+
+          console.log('userDisciplines', this.userDisciplines);
+          console.log('availableDisciplines', this.availableDisciplines);
+
+          // OnPush — явно пометить для проверки
+          this.cdr.markForCheck();
         },
-        error: (err) =>
-          console.error('Ошибка загрузки профиля или дисциплин', err),
+        error: (err) => {
+          console.error('Ошибка загрузки профиля или дисциплин', err);
+        },
       });
   }
 
   saveProfile(): void {
     if (!this.userProfile) return;
 
-    // обновляем профиль
     this.userProfile.firstName = this.firstName.trim();
     this.userProfile.secondName = this.secondName.trim();
     this.userProfile.fatherName = this.fatherName.trim();
 
-    // обновляем загруженного юзера (меняем только логин/пароль)
     this.user.username = this.username.trim();
     if (this.newPassword.trim()) {
       this.user.password = this.newPassword.trim();
@@ -157,34 +196,52 @@ export class ProfilePage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    console.log('ProfilePage ngAfterViewInit');
+    // безопасно инициализируем connectedTo если элементы доступны
     setTimeout(() => {
       if (this.availableList && this.userList) {
-        this.availableList.connectedTo = [this.userList];
-        this.userList.connectedTo = [this.availableList];
+        try {
+          this.availableList.connectedTo = [this.userList];
+          this.userList.connectedTo = [this.availableList];
+        } catch (e) {
+          console.warn('Ошибка при установке connectedTo', e);
+        }
       }
 
-      this.availableSkillElements.changes.subscribe(() => this.updateHeights());
-      this.userSkillElements.changes.subscribe(() => this.updateHeights());
+      // подписываемся на изменения QueryList и обновляем высоты
+      this.availableSkillElements?.changes.subscribe(() =>
+        this.updateHeights()
+      );
+      this.userSkillElements?.changes.subscribe(() => this.updateHeights());
       this.updateHeights();
     });
   }
 
   private updateHeights(): void {
-    setTimeout(() => {
-      this.availableSkillsListHeight = this.calculateTotalHeight(
-        this.availableSkillElements
-      );
-      this.userSkillsListHeight = this.calculateTotalHeight(
-        this.userSkillElements
-      );
-      this.cdr.detectChanges();
-    });
+    try {
+      setTimeout(() => {
+        this.availableSkillsListHeight = this.calculateTotalHeight(
+          this.availableSkillElements
+        );
+        this.userSkillsListHeight = this.calculateTotalHeight(
+          this.userSkillElements
+        );
+        this.cdr.detectChanges();
+      });
+    } catch (e) {
+      console.error('updateHeights error', e);
+    }
   }
 
-  private calculateTotalHeight(elements: QueryList<ElementRef>): number {
+  private calculateTotalHeight(elements?: QueryList<ElementRef>): number {
     const baseHeight = 120;
-    return elements.reduce(
-      (total, el) => total + (el.nativeElement.offsetHeight || 0),
+    if (!elements) return baseHeight;
+
+    const arr = elements.toArray();
+    if (arr.length === 0) return baseHeight;
+
+    return arr.reduce(
+      (total, el) => total + (el?.nativeElement?.offsetHeight || 0),
       baseHeight
     );
   }

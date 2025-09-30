@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Discipline } from '../../../interfaces/discipline.interface';
 import { DisciplineService } from '../discipline.service';
@@ -16,7 +21,8 @@ export class DisciplineList implements OnInit {
 
   constructor(
     private disciplineService: DisciplineService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -25,7 +31,10 @@ export class DisciplineList implements OnInit {
 
   private loadDisciplines(): void {
     this.disciplineService.getDisciplines().subscribe({
-      next: (data) => (this.disciplines = data),
+      next: (data) => {
+        this.disciplines = data;
+        this.cdr.markForCheck(); // уведомляем Angular о необходимости перерисовать
+      },
     });
   }
 

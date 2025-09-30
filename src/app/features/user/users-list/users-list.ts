@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -34,7 +39,8 @@ export class UsersList implements OnInit {
     private userService: UserService,
     private router: Router,
     private profileService: ProfileService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -44,7 +50,6 @@ export class UsersList implements OnInit {
   loadUsers(): void {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
-        // Загружаем профили для каждого пользователя
         const profileRequests = data.map((user) =>
           this.profileService.getProfile(user.id)
         );
@@ -55,6 +60,7 @@ export class UsersList implements OnInit {
               ...user,
               profile: profiles[index],
             }));
+            this.cdr.markForCheck(); // важное добавление для OnPush
           },
         });
       },
@@ -103,6 +109,7 @@ export class UsersList implements OnInit {
         this.users = this.users.filter((user) => user.id !== userId);
         this.changedUsers.delete(userId);
         console.log(`Пользователь с ID ${userId} удалён.`);
+        this.loadUsers();
       },
     });
   }
