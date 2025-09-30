@@ -12,23 +12,6 @@ import { SkillTestResultsService } from '../skill-test-results.service';
 
 import { TestResultView } from './test-result.model';
 
-interface SkillView {
-  name: string;
-  avg: number;
-}
-
-interface DisciplineView {
-  name: string;
-  avg: number;
-  skills: SkillView[];
-}
-
-interface StudentView {
-  id: number;
-  avg: number;
-  scores: Record<string, number | null>;
-}
-
 @Injectable({ providedIn: 'root' })
 export class TestResultFacade {
   private resultsSubject = new BehaviorSubject<TestResultView[]>([]);
