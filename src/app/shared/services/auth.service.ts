@@ -1,5 +1,5 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
@@ -7,6 +7,7 @@ import { RegisterResponse } from '../../interfaces/registerResponse.interface';
 import { User } from '../../interfaces/user.interface';
 import { LoginResponse } from '../../interfaces/loginResponse.interface';
 import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,7 +15,7 @@ export class AuthService {
   private readonly baseUrl = `${environment.apiUrl}/auth`;
   private readonly httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-    withCredentials: true,
+    withCredentials: true, // 🔹 важно для куки
   };
 
   private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -30,9 +31,7 @@ export class AuthService {
     private readonly storageService: StorageService
   ) {
     const storedUser = this.storageService.getUser();
-    const token = this.storageService.getToken();
-
-    if (storedUser && token) {
+    if (storedUser) {
       this.setCurrentUser(storedUser);
     }
   }
@@ -56,6 +55,7 @@ export class AuthService {
   }
 
   login(credentials: { username: string; password: string }): Observable<User> {
+    console.log('AuthService login', credentials);
     return this.http
       .post<LoginResponse>(
         `${this.baseUrl}/signin`,
@@ -64,7 +64,6 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          this.storageService.saveToken(res.token);
           this.setCurrentUser(this.buildUser(res));
         }),
         map((res) => this.buildUser(res))

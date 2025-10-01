@@ -6,14 +6,11 @@ import { User } from '../../interfaces/user.interface';
 })
 export class StorageService {
   private readonly USER_KEY = 'auth-user';
-  private readonly AUTH_TOKEN = 'auth-token';
 
-  // 🔹 Флаг для переключения между sessionStorage и localStorage
   private persistent = false;
 
   clean(): void {
     this.removeUser();
-    this.removeToken();
   }
 
   setPersistentMode(persistent: boolean): void {
@@ -32,18 +29,6 @@ export class StorageService {
     this.removeItem(this.USER_KEY);
   }
 
-  saveToken(token: string): void {
-    this.setItem(this.AUTH_TOKEN, token);
-  }
-
-  getToken(): string | null {
-    return this.getItem(this.AUTH_TOKEN);
-  }
-
-  removeToken(): void {
-    this.removeItem(this.AUTH_TOKEN);
-  }
-
   getUserRoles(): string[] {
     return this.getUser()?.roles ?? [];
   }
@@ -53,7 +38,7 @@ export class StorageService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.getUser();
   }
 
   // ===== Универсальные методы =====
