@@ -33,7 +33,7 @@
   </div>
 
   <!-- Результаты -->
-  <div class="card">
+  <div class="card" style="width: 100%">
     <h2 class="card-title">📊 Результаты</h2>
     <ng-container *ngIf="studentResults().length > 0; else noResults">
       <div *ngFor="let d of uniqueDisciplines()" class="discipline-card">
